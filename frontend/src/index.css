@@ -1,0 +1,592 @@
+@import url("https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Inter:wght@400;500;600&display=swap");
+@import "tailwindcss";
+
+/* index.css */
+
+:root {
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-display: "Fredoka", system-ui, sans-serif;
+
+  --nomi-bg: #ede3d4;
+  --nomi-bg-line: rgba(93, 64, 43, 0.09);
+  --nomi-bg-line-soft: rgba(93, 64, 43, 0.045);
+  --nomi-ink: #2b2320;
+  --nomi-window: #fffdf8;
+  --nomi-tab-idle: #ece2cd;
+  --nomi-tab-ink: #4a4038;
+  --nomi-accent: #3f9c8c;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--nomi-bg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+::selection {
+  background-color: var(--nomi-accent);
+  color: #ffffff;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #2b232026;
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: #2b23203d;
+}
+
+* {
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button {
+  cursor: pointer;
+}
+
+.nomi-admin-trigger {
+  position: absolute;
+  bottom: 0.35rem;
+  left: 0.75rem;
+  width: 2rem;
+  height: 2rem;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: rgba(43, 35, 32, 0.28);
+  font-size: 0.9rem;
+  letter-spacing: 0.08em;
+  transition: color 180ms ease, background-color 180ms ease;
+}
+
+.nomi-admin-trigger:hover,
+.nomi-admin-trigger:focus-visible {
+  background: rgba(63, 156, 140, 0.1);
+  color: var(--nomi-ink);
+}
+
+.nomi-admin-trigger:focus-visible {
+  outline: 2px solid var(--nomi-accent);
+  outline-offset: 2px;
+}
+
+.nomi-admin-shell {
+  position: relative;
+  z-index: 10;
+  min-height: 100dvh;
+  padding: 2rem 1rem;
+  background: transparent;
+  color: var(--nomi-ink);
+}
+
+.nomi-admin-gate,
+.nomi-admin-dashboard {
+  width: min(100%, 68rem);
+  margin: 0 auto;
+  border: 1px solid rgba(43, 35, 32, 0.1);
+  border-radius: 1.25rem;
+  background: rgba(255, 253, 248, 0.62);
+  box-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.42) inset,
+    0 22px 30px -24px rgba(76, 54, 38, 0.55),
+    0 8px 0 rgba(76, 54, 38, 0.08);
+  backdrop-filter: blur(12px);
+}
+
+.nomi-admin-gate {
+  max-width: 27rem;
+  padding: 2rem;
+  transform: perspective(900px) rotateX(1deg);
+}
+
+.nomi-admin-kicker {
+  color: var(--nomi-accent);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.nomi-admin-gate h1,
+.nomi-admin-dashboard h1 {
+  margin-top: 0.5rem;
+  font-family: var(--font-display);
+  font-size: clamp(1.75rem, 4vw, 2.6rem);
+  line-height: 1.05;
+}
+
+.nomi-admin-gate p,
+.nomi-admin-header p {
+  margin-top: 0.75rem;
+  color: #6e685f;
+  font-size: 0.9rem;
+}
+
+.nomi-admin-gate form {
+  display: grid;
+  gap: 0.55rem;
+  margin-top: 1.5rem;
+}
+
+.nomi-admin-gate label {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.nomi-admin-gate input {
+  min-height: 2.75rem;
+  border: 1px solid rgba(43, 35, 32, 0.18);
+  border-radius: 0.55rem;
+  background: #fff;
+  padding: 0.65rem 0.8rem;
+  color: var(--nomi-ink);
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  letter-spacing: 0.35em;
+  text-align: center;
+}
+
+.nomi-admin-gate input:focus-visible {
+  outline: 2px solid var(--nomi-accent);
+  outline-offset: 2px;
+}
+
+.nomi-admin-gate form button,
+.nomi-admin-back,
+.nomi-admin-section-heading button,
+.nomi-admin-row button,
+.nomi-admin-lock {
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--nomi-accent);
+  padding: 0.7rem 1rem;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.nomi-admin-error {
+  color: #a34c3f;
+  font-size: 0.75rem;
+}
+
+.nomi-admin-dashboard {
+  padding: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+.nomi-admin-header,
+.nomi-admin-section-heading,
+.nomi-admin-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nomi-admin-header,
+.nomi-admin-section-heading {
+  justify-content: space-between;
+}
+
+.nomi-admin-lock {
+  background: transparent;
+  color: var(--nomi-ink);
+  border: 1px solid rgba(43, 35, 32, 0.16);
+}
+
+.nomi-admin-metrics {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+  margin-top: 2rem;
+}
+
+.nomi-admin-metrics article {
+  border-radius: 0.75rem;
+  background: #f5ecdd;
+  padding: 1rem;
+}
+
+.nomi-admin-metrics span,
+.nomi-admin-row span {
+  color: #6e685f;
+  font-size: 0.75rem;
+}
+
+.nomi-admin-metrics strong {
+  display: block;
+  margin-top: 0.35rem;
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+}
+
+.nomi-admin-section {
+  margin-top: 2rem;
+}
+
+.nomi-admin-section h2 {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+}
+
+.nomi-admin-table {
+  margin-top: 0.75rem;
+  overflow: hidden;
+  border: 1px solid rgba(43, 35, 32, 0.1);
+  border-radius: 0.75rem;
+}
+
+.nomi-admin-row {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid rgba(43, 35, 32, 0.08);
+}
+
+.nomi-admin-row:last-child {
+  border-bottom: 0;
+}
+
+.nomi-admin-row strong {
+  min-width: 8rem;
+}
+
+.nomi-admin-row span:first-of-type {
+  flex: 1;
+}
+
+.nomi-admin-status {
+  color: var(--nomi-accent) !important;
+  font-weight: 600;
+}
+
+@media (max-width: 640px) {
+  .nomi-admin-header,
+  .nomi-admin-section-heading,
+  .nomi-admin-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .nomi-admin-metrics {
+    grid-template-columns: 1fr;
+  }
+
+  .nomi-admin-row button {
+    width: 100%;
+  }
+}
+
+@keyframes nomi-background-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotate(0deg);
+  }
+  50% {
+    transform: translate3d(14px, 10px, 0) rotate(0.6deg);
+  }
+}
+
+@keyframes nomi-background-drift-slow {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(-10px, -14px, 0) scale(1.015);
+  }
+}
+
+.nomi-site-background {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  background-color: var(--nomi-bg);
+}
+
+.nomi-site-background::before {
+  content: "";
+  position: absolute;
+  inset: -10%;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      var(--nomi-bg-line-soft) 0px,
+      var(--nomi-bg-line-soft) 1px,
+      transparent 1px,
+      transparent 96px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      var(--nomi-bg-line-soft) 0px,
+      var(--nomi-bg-line-soft) 1px,
+      transparent 1px,
+      transparent 96px
+    );
+  animation: nomi-background-drift 26s ease-in-out infinite;
+  will-change: transform;
+}
+
+.nomi-site-background::after {
+  content: "";
+  position: absolute;
+  inset: -15%;
+  background-image:
+    radial-gradient(ellipse 420px 300px at 12% 18%, var(--nomi-bg-line) 0%, transparent 60%),
+    radial-gradient(ellipse 360px 260px at 88% 82%, var(--nomi-bg-line) 0%, transparent 62%),
+    radial-gradient(ellipse 200px 180px at 78% 10%, var(--nomi-bg-line-soft) 0%, transparent 65%);
+  opacity: 0.7;
+  animation: nomi-background-drift-slow 34s ease-in-out infinite;
+  will-change: transform;
+}
+
+.nomi-background-drift {
+  animation: nomi-background-drift 18s ease-in-out infinite;
+  will-change: transform;
+}
+
+.nomi-coffee-mark {
+  filter: drop-shadow(0 5px 8px rgba(43, 35, 32, 0.06));
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .nomi-site-background::before,
+  .nomi-site-background::after,
+  .nomi-background-drift {
+    animation: none;
+    will-change: auto;
+  }
+
+  .nomi-coffee-mark {
+    will-change: auto;
+  }
+}
+
+.nomi-window {
+  position: relative;
+  background-color: var(--nomi-window);
+  border: 1px solid rgba(43, 35, 32, 0.09);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.5) inset,
+    0 40px 70px -24px rgba(76, 54, 38, 0.32),
+    0 14px 28px -14px rgba(76, 54, 38, 0.22),
+    0 2px 0 rgba(43, 35, 32, 0.05);
+}
+
+.nomi-paper {
+  background-image: radial-gradient(
+    rgba(43, 35, 32, 0.035) 0.7px,
+    transparent 0.8px
+  );
+  background-size: 17px 17px;
+}
+
+.nomi-notebook {
+  position: relative;
+}
+
+.nomi-menu-symbols {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.nomi-notebook-tabs {
+  position: relative;
+  z-index: 3;
+  overflow-x: auto;
+  padding: 0.85rem 0.85rem 0;
+  scrollbar-width: none;
+}
+
+.nomi-notebook-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.nomi-notebook-tab-rail {
+  display: flex;
+  min-width: max-content;
+  align-items: flex-end;
+  padding-inline: 0.35rem;
+}
+
+.nomi-notebook-tab {
+  position: relative;
+  flex: 0 0 auto;
+  z-index: 1;
+  margin-right: 0.35rem;
+  padding: 0.85rem 1.4rem 0.9rem;
+  border: none;
+  border-radius: 0.45rem 0.45rem 0 0;
+  background: var(--nomi-window);
+  color: var(--nomi-ink);
+  opacity: 0.5;
+  font-size: 0.8rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  box-shadow: none;
+  transition:
+    opacity 200ms ease,
+    box-shadow 200ms ease,
+    transform 200ms ease;
+}
+
+.nomi-notebook-tab:focus-visible {
+  outline: 2px solid var(--nomi-accent);
+  outline-offset: 2px;
+}
+
+.nomi-notebook-tab.is-active {
+  z-index: 8;
+  opacity: 1;
+  transform: translateY(-0.15rem);
+  box-shadow: 0 10px 18px -10px rgba(43, 35, 32, 0.45);
+}
+
+.nomi-notebook-tab.is-active::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  left: 0;
+  right: 0;
+  bottom: -0.3rem;
+  height: 0.4rem;
+  background: var(--nomi-window);
+}
+
+.nomi-notebook-page {
+  position: relative;
+  z-index: 1;
+  min-height: 18rem;
+  background-color: var(--nomi-window);
+  background-image:
+    radial-gradient(circle at 8% 16%, rgba(216, 137, 92, 0.08), transparent 18%),
+    radial-gradient(circle at 92% 72%, rgba(63, 156, 140, 0.07), transparent 20%),
+    radial-gradient(rgba(91, 57, 40, 0.035) 0.7px, transparent 0.8px);
+  background-size: auto, auto, 17px 17px;
+}
+
+.nomi-notebook-page-content {
+  position: relative;
+  z-index: 1;
+  animation-duration: 240ms;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+  min-height: 18rem;
+}
+
+.nomi-notebook-page-content.is-next {
+  animation-name: nomi-notebook-page-slide-next;
+}
+
+.nomi-notebook-page-content.is-previous {
+  animation-name: nomi-notebook-page-slide-previous;
+}
+
+@keyframes nomi-notebook-page-slide-next {
+  from {
+    opacity: 0.82;
+    transform: translateX(1.2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes nomi-notebook-page-slide-previous {
+  from {
+    opacity: 0.82;
+    transform: translateX(-1.2rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (min-width: 640px) {
+  .nomi-notebook-tabs {
+    padding-inline: 1.5rem;
+    padding-top: 1rem;
+  }
+
+  .nomi-notebook-tab {
+    padding: 1rem 1.7rem 1.05rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nomi-notebook-tab,
+  .nomi-notebook-page {
+    transition: none;
+    animation: none;
+  }
+}
+
+.nomi-admin-back {
+  width: 100%;
+  margin-top: 0.6rem;
+  background: transparent;
+  border: 1px solid rgba(43, 35, 32, 0.16);
+  color: var(--nomi-ink);
+}
+
+.nomi-admin-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+}
+
+.nomi-admin-keypad button {
+  min-height: 2.8rem;
+  border: 1px solid rgba(43, 35, 32, 0.1);
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.62);
+  color: var(--nomi-ink);
+  font-weight: 600;
+  box-shadow: 0 3px 0 rgba(76, 54, 38, 0.12);
+  transition: transform 120ms ease, box-shadow 120ms ease, background-color 120ms ease;
+}
+
+.nomi-admin-keypad button:hover,
+.nomi-admin-keypad button:focus-visible {
+  background: rgba(63, 156, 140, 0.12);
+}
+
+.nomi-admin-keypad button:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 rgba(76, 54, 38, 0.12);
+}
+
+.nomi-admin-submit {
+  width: 100%;
+  margin-top: 0.75rem;
+}

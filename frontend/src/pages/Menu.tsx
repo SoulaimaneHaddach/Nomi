@@ -1,5 +1,5 @@
 // pages/Menu.tsx
-import { useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import Header from "../components/Header";
 import FloatingSymbol from "../components/FloatingSymbol";
 import { FLOATING_SYMBOLS } from "../components/floatingSymbols";
@@ -21,6 +21,7 @@ export type Product = {
 };
 
 const CATEGORIES = ["All", "Coffee", "Breakfast", "Food", "Desserts", "Drinks"];
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 
 const PRODUCTS: Product[] = [
   // Coffee
@@ -189,13 +190,37 @@ export default function Menu() {
     "next",
   );
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [products, setProducts] = useState<Product[]>(PRODUCTS);
 
-  const popular = PRODUCTS.slice(0, 3);
+  useEffect(() => {
+    fetch(`${API_URL}/api/products`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Unable to load the latest menu.");
+        }
+        return response.json() as Promise<Array<Omit<Product, "image"> & { imageUrl: string }>>;
+      })
+      .then((databaseProducts) => {
+        startTransition(() => {
+          setProducts(
+            databaseProducts.map(({ imageUrl, ...product }) => ({
+              ...product,
+              image: imageUrl,
+            })),
+          );
+        });
+      })
+      .catch(() => {
+        // Keep the bundled menu available if the API is temporarily offline.
+      });
+  }, []);
+
+  const popular = products.slice(0, 3);
 
   const visibleProducts =
     activeCategory === "All"
-      ? PRODUCTS
-      : PRODUCTS.filter((p) => p.category === activeCategory);
+      ? products
+      : products.filter((p) => p.category === activeCategory);
 
   const handleCategorySelect = (category: string) => {
     const currentIndex = CATEGORIES.indexOf(activeCategory);

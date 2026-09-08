@@ -1,40 +1,51 @@
-import { useState } from "react";
+import { startTransition, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import DecorativeBackground from "../components/DecorativeBackground";
+import type { FormEvent } from "react";
 
 const ADMIN_SESSION_KEY = "nomi-admin-session";
-const ADMIN_PIN = import.meta.env.VITE_ADMIN_PIN ?? "0000";
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 
-const categorySummary = [
-  { name: "Coffee", items: 4, status: "Live" },
-  { name: "Breakfast", items: 4, status: "Live" },
-  { name: "Food", items: 3, status: "Live" },
-  { name: "Desserts", items: 3, status: "Live" },
-  { name: "Drinks", items: 3, status: "Live" },
-];
+type AdminProduct = {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  currency: string;
+  imageUrl: string;
+  category: string;
+  isVisible: boolean;
+};
 
-function PinGate({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => void }) {
-  const [pin, setPin] = useState("");
+const categories = ["Coffee", "Breakfast", "Food", "Desserts", "Drinks"];
+
+function LoginGate({ onUnlock, onBack }: { onUnlock: (token: string) => void; onBack: () => void }) {
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const appendDigit = (digit: string) => {
-    if (pin.length >= 8) {
-      return;
-    }
-
-    const nextPin = `${pin}${digit}`;
-    setPin(nextPin);
+  const handleLogin = async () => {
+    setIsSubmitting(true);
     setError("");
 
-    if (nextPin === ADMIN_PIN) {
-      sessionStorage.setItem(ADMIN_SESSION_KEY, "unlocked");
-      onUnlock();
-      return;
-    }
+    try {
+      const response = await fetch(`${API_URL}/api/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, password }),
+      });
 
-    if (nextPin.length >= ADMIN_PIN.length) {
-      setPin("");
-      setError("That access code is not valid.");
+      if (!response.ok) {
+        throw new Error("Invalid username or password.");
+      }
+
+      const data = (await response.json()) as { token: string };
+      onUnlock(data.token);
+    } catch (loginError) {
+      setError(loginError instanceof Error ? loginError.message : "Unable to sign in.");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -45,33 +56,33 @@ function PinGate({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => voi
         <section className="nomi-admin-gate" aria-labelledby="admin-gate-title">
         <span className="nomi-admin-kicker">Nomi Café</span>
         <h1 id="admin-gate-title">Private menu access</h1>
-        <p>Enter the access code to open the café dashboard.</p>
-        <div>
-          <label htmlFor="admin-pin">Access code</label>
+        <p>Sign in to manage the café menu.</p>
+        <form onSubmit={(event) => { event.preventDefault(); void handleLogin(); }}>
+          <label htmlFor="admin-username">Username</label>
           <input
-            id="admin-pin"
-            type="password"
-            inputMode="numeric"
-            autoComplete="current-password"
-            value={pin}
-            readOnly
-            placeholder="----"
+            id="admin-username"
+            type="text"
+            autoComplete="username"
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            placeholder="Username"
             aria-invalid={Boolean(error)}
           />
-          <div className="nomi-admin-keypad" aria-label="Access code keypad">
-            {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((digit) => (
-              <button type="button" key={digit} onClick={() => appendDigit(digit)}>
-                {digit}
-              </button>
-            ))}
-            <button type="button" onClick={() => setPin("")}>Clear</button>
-            <button type="button" onClick={() => appendDigit("0")}>0</button>
-            <button type="button" onClick={() => setPin((currentPin) => currentPin.slice(0, -1))}>
-              Del
-            </button>
-          </div>
+          <label htmlFor="admin-password">Password</label>
+          <input
+            id="admin-password"
+            type="password"
+            autoComplete="current-password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            placeholder="Password"
+            aria-invalid={Boolean(error)}
+          />
           {error && <span className="nomi-admin-error">{error}</span>}
-        </div>
+          <button className="nomi-admin-submit" type="submit" disabled={isSubmitting || !username || !password}>
+            {isSubmitting ? "Signing in..." : "Sign in"}
+          </button>
+        </form>
         <button type="button" className="nomi-admin-back" onClick={onBack}>
           Back to menu
         </button>
@@ -81,7 +92,105 @@ function PinGate({ onUnlock, onBack }: { onUnlock: () => void; onBack: () => voi
   );
 }
 
-function Dashboard({ onLock }: { onLock: () => void }) {
+function Dashboard({ token, onLock }: { token: string; onLock: () => void }) {
+  const [products, setProducts] = useState<AdminProduct[]>([]);
+  const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(null);
+  const [productToDelete, setProductToDelete] = useState<AdminProduct | null>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [error, setError] = useState("");
+
+  const loadProducts = async () => {
+    const response = await fetch(`${API_URL}/api/products`);
+    if (!response.ok) {
+      throw new Error("Unable to load products.");
+    }
+    setProducts((await response.json()) as AdminProduct[]);
+  };
+
+  useEffect(() => {
+    fetch(`${API_URL}/api/products`)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error("Unable to load products.");
+        }
+        return response.json() as Promise<AdminProduct[]>;
+      })
+      .then((loadedProducts) => {
+        startTransition(() => setProducts(loadedProducts));
+      })
+      .catch((loadError: unknown) => {
+        setError(loadError instanceof Error ? loadError.message : "Unable to load products.");
+      });
+  }, []);
+
+  const saveProduct = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    let imageUrl = String(formData.get("imageUrl") ?? "");
+    const imageFile = formData.get("image") as File | null;
+
+    if (imageFile?.size) {
+      const uploadData = new FormData();
+      uploadData.append("image", imageFile);
+      const uploadResponse = await fetch(`${API_URL}/api/uploads`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: uploadData,
+      });
+
+      if (!uploadResponse.ok) {
+        setError("Unable to upload image.");
+        return;
+      }
+
+      const uploaded = (await uploadResponse.json()) as { imageUrl: string };
+      imageUrl = uploaded.imageUrl;
+    }
+
+    const payload = {
+      name: String(formData.get("name")),
+      description: String(formData.get("description")),
+      price: Number(formData.get("price")),
+      imageUrl,
+      category: String(formData.get("category")),
+      currency: "DH",
+      isVisible: formData.get("isVisible") === "on",
+    };
+
+    const response = await fetch(
+      editingProduct ? `${API_URL}/api/products/${editingProduct.id}` : `${API_URL}/api/products`,
+      {
+        method: editingProduct ? "PATCH" : "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(payload),
+      },
+    );
+
+    if (!response.ok) {
+      setError("Unable to save product.");
+      return;
+    }
+
+    setIsEditorOpen(false);
+    setEditingProduct(null);
+    setError("");
+    await loadProducts();
+  };
+
+  const removeProduct = async (product: AdminProduct) => {
+    const response = await fetch(`${API_URL}/api/products/${product.id}`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+
+    if (response.ok) {
+      setProducts((currentProducts) => currentProducts.filter((item) => item.id !== product.id));
+      setProductToDelete(null);
+    } else {
+      setError("Unable to delete product.");
+    }
+  };
+
   return (
     <>
       <DecorativeBackground />
@@ -105,7 +214,7 @@ function Dashboard({ onLock }: { onLock: () => void }) {
           </article>
           <article>
             <span>Visible items</span>
-            <strong>17</strong>
+            <strong>{products.length}</strong>
           </article>
           <article>
             <span>Menu status</span>
@@ -116,21 +225,64 @@ function Dashboard({ onLock }: { onLock: () => void }) {
         <section className="nomi-admin-section" aria-labelledby="category-summary-title">
           <div className="nomi-admin-section-heading">
             <h2 id="category-summary-title">Category overview</h2>
-            <button type="button">Add item</button>
+            <button type="button" onClick={() => { setEditingProduct(null); setIsEditorOpen(true); }}>
+              Add item
+            </button>
           </div>
+          {error && <span className="nomi-admin-error">{error}</span>}
+          {isEditorOpen && (
+            <form className="nomi-admin-editor" onSubmit={(event) => void saveProduct(event)}>
+              <input name="name" required placeholder="Product name" defaultValue={editingProduct?.name ?? ""} />
+              <input name="description" required placeholder="Description" defaultValue={editingProduct?.description ?? ""} />
+              <input name="price" required type="number" min="0" step="0.01" placeholder="Price" defaultValue={editingProduct?.price ?? ""} />
+              <input name="image" type="file" accept="image/*" />
+              <input name="imageUrl" placeholder="Existing image URL (optional)" defaultValue={editingProduct?.imageUrl ?? ""} />
+              <select name="category" defaultValue={editingProduct?.category ?? categories[0]}>
+                {categories.map((category) => <option key={category}>{category}</option>)}
+              </select>
+              <label className="nomi-admin-availability">
+                <input name="isVisible" type="checkbox" defaultChecked={editingProduct?.isVisible ?? true} />
+                Available on public menu
+              </label>
+              <button type="submit">Save product</button>
+              <button type="button" className="nomi-admin-cancel" onClick={() => setIsEditorOpen(false)}>Cancel</button>
+            </form>
+          )}
           <div className="nomi-admin-table" role="table" aria-label="Menu category overview">
-            {categorySummary.map((category) => (
-              <div className="nomi-admin-row" role="row" key={category.name}>
-                <strong role="cell">{category.name}</strong>
-                <span role="cell">{category.items} items</span>
-                <span className="nomi-admin-status" role="cell">{category.status}</span>
-                <button type="button" role="cell" aria-label={`Edit ${category.name}`}>
-                  Edit
-                </button>
+            {products.map((product) => (
+              <div className="nomi-admin-row" role="row" key={product.id}>
+                <strong role="cell">{product.name}</strong>
+                <span role="cell">{product.category} · {product.price} DH</span>
+                <span className="nomi-admin-status" role="cell">{product.isVisible ? "Live" : "Hidden"}</span>
+                <div className="nomi-admin-actions" role="cell">
+                  <button type="button" onClick={() => { setEditingProduct(product); setIsEditorOpen(true); }}>
+                    Edit
+                  </button>
+                  <button type="button" className="nomi-admin-delete" onClick={() => setProductToDelete(product)}>
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         </section>
+        {productToDelete && (
+          <div className="nomi-admin-confirm-backdrop" role="presentation">
+            <section className="nomi-admin-confirm" role="dialog" aria-modal="true" aria-labelledby="delete-title">
+              <span className="nomi-admin-kicker">Permanent action</span>
+              <h2 id="delete-title">Delete {productToDelete.name}?</h2>
+              <p>This removes the product from the database and public menu.</p>
+              <div className="nomi-admin-confirm-actions">
+                <button type="button" className="nomi-admin-cancel" onClick={() => setProductToDelete(null)}>
+                  Keep item
+                </button>
+                <button type="button" className="nomi-admin-delete-confirm" onClick={() => void removeProduct(productToDelete)}>
+                  Delete item
+                </button>
+              </div>
+            </section>
+          </div>
+        )}
         </section>
       </main>
     </>
@@ -139,18 +291,21 @@ function Dashboard({ onLock }: { onLock: () => void }) {
 
 export default function Admin() {
   const navigate = useNavigate();
-  const [unlocked, setUnlocked] = useState(
-    () => sessionStorage.getItem(ADMIN_SESSION_KEY) === "unlocked",
-  );
+  const [token, setToken] = useState(() => sessionStorage.getItem(ADMIN_SESSION_KEY));
 
   const lockDashboard = () => {
     sessionStorage.removeItem(ADMIN_SESSION_KEY);
-    setUnlocked(false);
+    setToken(null);
   };
 
-  return unlocked ? (
-    <Dashboard onLock={lockDashboard} />
+  const unlockDashboard = (token: string) => {
+    sessionStorage.setItem(ADMIN_SESSION_KEY, token);
+    setToken(token);
+  };
+
+  return token ? (
+    <Dashboard token={token} onLock={lockDashboard} />
   ) : (
-    <PinGate onUnlock={() => setUnlocked(true)} onBack={() => navigate("/")} />
+    <LoginGate onUnlock={unlockDashboard} onBack={() => navigate("/")} />
   );
 }

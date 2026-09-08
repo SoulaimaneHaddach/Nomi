@@ -159,10 +159,7 @@ button {
   background: #fff;
   padding: 0.65rem 0.8rem;
   color: var(--nomi-ink);
-  font-family: var(--font-display);
-  font-size: 1.35rem;
-  letter-spacing: 0.35em;
-  text-align: center;
+  font-size: 0.95rem;
 }
 
 .nomi-admin-gate input:focus-visible {
@@ -182,6 +179,11 @@ button {
   color: #fff;
   font-size: 0.8rem;
   font-weight: 600;
+}
+
+.nomi-admin-gate form button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 .nomi-admin-error {
@@ -242,6 +244,53 @@ button {
   margin-top: 2rem;
 }
 
+.nomi-admin-editor {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem;
+  margin: 0.9rem 0;
+}
+
+.nomi-admin-editor input,
+.nomi-admin-editor select {
+  min-height: 2.5rem;
+  border: 1px solid rgba(43, 35, 32, 0.14);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.7);
+  padding: 0.55rem 0.7rem;
+  color: var(--nomi-ink);
+}
+
+.nomi-admin-editor button {
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--nomi-accent);
+  padding: 0.65rem 0.9rem;
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.nomi-admin-editor .nomi-admin-cancel,
+.nomi-admin-row .nomi-admin-delete {
+  background: transparent;
+  color: var(--nomi-ink);
+  border: 1px solid rgba(43, 35, 32, 0.16);
+}
+
+.nomi-admin-availability {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6e685f;
+  font-size: 0.78rem;
+}
+
+.nomi-admin-availability input {
+  min-height: auto;
+  accent-color: var(--nomi-accent);
+}
+
 .nomi-admin-section h2 {
   font-family: var(--font-display);
   font-size: 1.25rem;
@@ -271,6 +320,86 @@ button {
   flex: 1;
 }
 
+.nomi-admin-actions {
+  display: flex;
+  gap: 0.4rem;
+  margin-left: auto;
+}
+
+.nomi-admin-actions button {
+  border: 1px solid rgba(63, 156, 140, 0.35);
+  border-radius: 0.45rem;
+  background: rgba(63, 156, 140, 0.08);
+  padding: 0.45rem 0.7rem;
+  color: #2f8175;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.nomi-admin-actions .nomi-admin-delete {
+  border-color: rgba(163, 76, 63, 0.28);
+  background: rgba(163, 76, 63, 0.06);
+  color: #a34c3f;
+}
+
+.nomi-admin-confirm-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: rgba(43, 35, 32, 0.28);
+  backdrop-filter: blur(4px);
+}
+
+.nomi-admin-confirm {
+  width: min(100%, 26rem);
+  border: 1px solid rgba(43, 35, 32, 0.12);
+  border-radius: 1rem;
+  background: rgba(255, 253, 248, 0.94);
+  padding: 1.4rem;
+  box-shadow: 0 24px 60px -24px rgba(43, 35, 32, 0.55);
+}
+
+.nomi-admin-confirm h2 {
+  margin-top: 0.45rem;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+}
+
+.nomi-admin-confirm p {
+  margin-top: 0.55rem;
+  color: #6e685f;
+  font-size: 0.85rem;
+}
+
+.nomi-admin-confirm-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
+}
+
+.nomi-admin-confirm-actions button {
+  border-radius: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.nomi-admin-confirm-actions .nomi-admin-cancel {
+  border: 1px solid rgba(43, 35, 32, 0.16);
+  background: transparent;
+  color: var(--nomi-ink);
+}
+
+.nomi-admin-delete-confirm {
+  border: 1px solid rgba(163, 76, 63, 0.3);
+  background: #a34c3f;
+  color: #fff;
+}
+
 .nomi-admin-status {
   color: var(--nomi-accent) !important;
   font-weight: 600;
@@ -290,6 +419,11 @@ button {
 
   .nomi-admin-row button {
     width: 100%;
+  }
+
+  .nomi-admin-actions {
+    width: 100%;
+    margin-left: 0;
   }
 }
 

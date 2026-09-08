@@ -9,6 +9,7 @@
 # Build output
 **/dist/
 **/build/
+backend/uploads/
 
 # Logs
 *.log

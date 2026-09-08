@@ -92,15 +92,18 @@ function LoginGate({ onUnlock, onBack }: { onUnlock: (token: string) => void; on
   );
 }
 
-function Dashboard({ token, onLock }: { token: string; onLock: () => void }) {
+function Dashboard({ token, onLock, onTokenChange }: { token: string; onLock: () => void; onTokenChange: (token: string) => void }) {
   const [products, setProducts] = useState<AdminProduct[]>([]);
   const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(null);
   const [productToDelete, setProductToDelete] = useState<AdminProduct | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isCredentialsEditorOpen, setIsCredentialsEditorOpen] = useState(false);
   const [error, setError] = useState("");
 
   const loadProducts = async () => {
-    const response = await fetch(`${API_URL}/api/products`);
+    const response = await fetch(`${API_URL}/api/products/admin`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     if (!response.ok) {
       throw new Error("Unable to load products.");
     }
@@ -108,7 +111,7 @@ function Dashboard({ token, onLock }: { token: string; onLock: () => void }) {
   };
 
   useEffect(() => {
-    fetch(`${API_URL}/api/products`)
+    fetch(`${API_URL}/api/products/admin`, { headers: { Authorization: `Bearer ${token}` } })
       .then((response) => {
         if (!response.ok) {
           throw new Error("Unable to load products.");
@@ -121,7 +124,7 @@ function Dashboard({ token, onLock }: { token: string; onLock: () => void }) {
       .catch((loadError: unknown) => {
         setError(loadError instanceof Error ? loadError.message : "Unable to load products.");
       });
-  }, []);
+  }, [token]);
 
   const saveProduct = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -191,6 +194,47 @@ function Dashboard({ token, onLock }: { token: string; onLock: () => void }) {
     }
   };
 
+  const toggleProductVisibility = async (product: AdminProduct) => {
+    const isVisible = !product.isVisible;
+    setProducts((currentProducts) => currentProducts.map((item) => item.id === product.id ? { ...item, isVisible } : item));
+
+    const response = await fetch(`${API_URL}/api/products/${product.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ isVisible }),
+    });
+
+    if (!response.ok) {
+      setProducts((currentProducts) => currentProducts.map((item) => item.id === product.id ? product : item));
+      setError("Unable to update public menu availability.");
+    }
+  };
+
+  const changeCredentials = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    const response = await fetch(`${API_URL}/api/auth/credentials`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({
+        currentPassword: formData.get("currentPassword"),
+        newUsername: formData.get("newUsername"),
+        newPassword: formData.get("newPassword"),
+      }),
+    });
+
+    if (!response.ok) {
+      const data = (await response.json().catch(() => null)) as { message?: string } | null;
+      setError(data?.message ?? "Unable to update username and password.");
+      return;
+    }
+
+    const data = (await response.json()) as { token: string };
+    onTokenChange(data.token);
+    setError("");
+    setIsCredentialsEditorOpen(false);
+  };
+
   return (
     <>
       <DecorativeBackground />
@@ -205,7 +249,33 @@ function Dashboard({ token, onLock }: { token: string; onLock: () => void }) {
           <button type="button" className="nomi-admin-lock" onClick={onLock}>
             Lock dashboard
           </button>
+          <button type="button" className="nomi-admin-lock" onClick={() => setIsCredentialsEditorOpen((open) => !open)}>
+            Change username &amp; password
+          </button>
         </header>
+
+        {isCredentialsEditorOpen && (
+          <form className="nomi-admin-credentials-editor" onSubmit={(event) => void changeCredentials(event)}>
+            <div>
+              <span className="nomi-admin-kicker">Account security</span>
+              <h2>Update owner access</h2>
+              <p>Use a strong password. This replaces the old PIN shortcut.</p>
+            </div>
+            <label>
+              Current password
+              <input name="currentPassword" required type="password" autoComplete="current-password" />
+            </label>
+            <label>
+              New username
+              <input name="newUsername" required minLength={3} autoComplete="username" />
+            </label>
+            <label>
+              New password
+              <input name="newPassword" required minLength={12} type="password" autoComplete="new-password" />
+            </label>
+            <button type="submit">Save credentials</button>
+          </form>
+        )}
 
         <div className="nomi-admin-metrics">
           <article>
@@ -214,7 +284,7 @@ function Dashboard({ token, onLock }: { token: string; onLock: () => void }) {
           </article>
           <article>
             <span>Visible items</span>
-            <strong>{products.length}</strong>
+            <strong>{products.filter((product) => product.isVisible).length}</strong>
           </article>
           <article>
             <span>Menu status</span>
@@ -254,6 +324,19 @@ function Dashboard({ token, onLock }: { token: string; onLock: () => void }) {
                 <strong role="cell">{product.name}</strong>
                 <span role="cell">{product.category} · {product.price} DH</span>
                 <span className="nomi-admin-status" role="cell">{product.isVisible ? "Live" : "Hidden"}</span>
+                <label className="nomi-admin-row-availability" role="cell">
+                  <input
+                    type="checkbox"
+                    checked={product.isVisible}
+                    aria-label={`Make ${product.name} available on the public menu`}
+                    onChange={() => void toggleProductVisibility(product)}
+                  />
+                  <span className="nomi-admin-switch" aria-hidden="true" />
+                  <span className="nomi-admin-availability-copy">
+                    <strong>Public menu</strong>
+                    <small>{product.isVisible ? "On" : "Off"}</small>
+                  </span>
+                </label>
                 <div className="nomi-admin-actions" role="cell">
                   <button type="button" onClick={() => { setEditingProduct(product); setIsEditorOpen(true); }}>
                     Edit
@@ -304,7 +387,7 @@ export default function Admin() {
   };
 
   return token ? (
-    <Dashboard token={token} onLock={lockDashboard} />
+    <Dashboard token={token} onLock={lockDashboard} onTokenChange={unlockDashboard} />
   ) : (
     <LoginGate onUnlock={unlockDashboard} onBack={() => navigate("/")} />
   );

@@ -1,4 +1,3 @@
--- CreateTable
 CREATE TABLE "Admin" (
     "id" TEXT NOT NULL,
     "username" TEXT NOT NULL,
@@ -9,7 +8,6 @@ CREATE TABLE "Admin" (
     CONSTRAINT "Admin_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
 CREATE TABLE "Product" (
     "id" TEXT NOT NULL,
     "name" TEXT NOT NULL,
@@ -25,11 +23,8 @@ CREATE TABLE "Product" (
     CONSTRAINT "Product_pkey" PRIMARY KEY ("id")
 );
 
--- CreateIndex
 CREATE UNIQUE INDEX "Admin_username_key" ON "Admin"("username");
 
--- CreateIndex
 CREATE INDEX "Product_category_idx" ON "Product"("category");
 
--- CreateIndex
 CREATE INDEX "Product_isVisible_idx" ON "Product"("isVisible");

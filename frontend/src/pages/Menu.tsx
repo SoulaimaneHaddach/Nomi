@@ -8,7 +8,6 @@ import DecorativeBackground from "../components/DecorativeBackground";
 import ProductCard from "../components/ProductCard";
 import ProductModal from "../components/ProductModal";
 
-// --- Mock data (swap for real API data later) ---
 
 export type Product = {
   id: string;
@@ -24,7 +23,6 @@ const CATEGORIES = ["All", "Coffee", "Breakfast", "Food", "Desserts", "Drinks"];
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 
 const PRODUCTS: Product[] = [
-  // Coffee
   {
     id: "cappuccino",
     name: "Cappuccino",
@@ -61,7 +59,6 @@ const PRODUCTS: Product[] = [
     image: "/imgs/webp/flat-white.webp",
     category: "Coffee",
   },
-  // Breakfast
   {
     id: "avocado-toast",
     name: "Avocado Toast",
@@ -98,7 +95,6 @@ const PRODUCTS: Product[] = [
     image: "/imgs/webp/shakshuka.webp",
     category: "Breakfast",
   },
-  // Food
   {
     id: "club-sandwich",
     name: "Club Sandwich",
@@ -126,7 +122,6 @@ const PRODUCTS: Product[] = [
     image: "/imgs/webp/margherita-panini.webp",
     category: "Food",
   },
-  // Desserts
   {
     id: "chocolate-brownie",
     name: "Chocolate Brownie",
@@ -154,7 +149,6 @@ const PRODUCTS: Product[] = [
     image: "/imgs/webp/tiramisu.webp",
     category: "Desserts",
   },
-  // Drinks
   {
     id: "orange-juice",
     name: "Fresh Orange Juice",
@@ -211,7 +205,6 @@ export default function Menu() {
         });
       })
       .catch(() => {
-        // Keep the bundled menu available if the API is temporarily offline.
       });
   }, []);
 
@@ -236,15 +229,13 @@ export default function Menu() {
 
   return (
     <div className="relative isolate min-h-dvh w-full overflow-x-hidden text-[#2B2320]">
-      {/* LAYER 1 — website background, full-screen, sits behind the window */}
       <div className="nomi-site-background" aria-hidden="true" />
       <DecorativeBackground />
 
-      {/* LAYER 2 — the menu window, the main object on the page */}
       <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-screen-2xl flex-col px-3 py-6 sm:px-6 sm:py-10 lg:px-10 lg:py-14">
         <main className="nomi-window nomi-paper mx-auto w-full max-w-6xl overflow-hidden rounded-[1.75rem] sm:rounded-[2.25rem]">
           <Header
-            name="Nomi Café"
+            name="Nomi Project"
             tagline="Good coffee. Good vibes. No rush."
           />
 

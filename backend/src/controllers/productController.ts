@@ -14,6 +14,14 @@ export async function listProducts(_request: Request, response: Response) {
   response.json(products.map(serializeProduct));
 }
 
+export async function listAdminProducts(_request: Request, response: Response) {
+  const products = await prisma.product.findMany({
+    orderBy: [{ category: "asc" }, { name: "asc" }],
+  });
+
+  response.json(products.map(serializeProduct));
+}
+
 export async function createProduct(request: Request, response: Response) {
   const { name, description, price, currency, imageUrl, category, isVisible } = request.body;
 

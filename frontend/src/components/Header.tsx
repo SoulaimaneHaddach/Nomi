@@ -8,9 +8,12 @@ import { useRef } from "react";
 type HeaderProps = {
   name: string;
   tagline: string;
+  languages: Array<{ code: string; name: string; nativeName: string; direction: string }>;
+  activeLanguageCode: string;
+  onLanguageChange: (code: string) => void;
 };
 
-function Mascot() {
+export function Mascot() {
   return (
     <svg width="120" height="120" viewBox="0 0 150 150" className="mx-auto h-full w-full">
       <path
@@ -65,7 +68,7 @@ function Mascot() {
   );
 }
 
-export default function Header({ name, tagline }: HeaderProps) {
+export default function Header({ name, tagline, languages, activeLanguageCode, onLanguageChange }: HeaderProps) {
   const navigate = useNavigate();
   const secretClicks = useRef(0);
   const resetSecretClicks = useRef<number | undefined>(undefined);
@@ -115,7 +118,7 @@ export default function Header({ name, tagline }: HeaderProps) {
             {name}
           </h1>
         </div>
-        <LanguageSwitcher />
+        <LanguageSwitcher languages={languages} activeCode={activeLanguageCode} onChange={onLanguageChange} />
       </div>
 
       <div className="relative mt-4 text-center sm:mt-5">

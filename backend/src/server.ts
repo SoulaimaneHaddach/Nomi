@@ -5,6 +5,9 @@ import express from "express";
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
 import uploadRoutes from "./routes/uploadRoutes.js";
+import languageRoutes from "./routes/languageRoutes.js";
+import translationRoutes from "./routes/translationRoutes.js";
+import platformRoutes from "./routes/platformRoutes.js";
 
 const app = express();
 const port = Number(process.env.PORT ?? 4000);
@@ -24,6 +27,9 @@ app.use(cors({ origin: (origin, callback) => {
 } }));
 app.use(express.json());
 app.use("/api/auth", authRoutes);
+app.use("/api/languages", languageRoutes);
+app.use("/api/translations", translationRoutes);
+app.use("/api/platform", platformRoutes);
 app.use("/api/products", productRoutes);
 app.use("/uploads", express.static(path.resolve("uploads")));
 app.use("/api/uploads", uploadRoutes);

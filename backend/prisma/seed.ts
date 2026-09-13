@@ -25,11 +25,57 @@ const products = [
 ] as const;
 
 async function main() {
+  await prisma.language.createMany({
+    data: [
+      ["en", "English", "English", "ltr"],
+      ["fr", "French", "Français", "ltr"],
+      ["ar", "Arabic", "العربية", "rtl"],
+      ["es", "Spanish", "Español", "ltr"],
+      ["de", "German", "Deutsch", "ltr"],
+      ["tr", "Turkish", "Türkçe", "ltr"],
+      ["ja", "Japanese", "日本語", "ltr"],
+      ["it", "Italian", "Italiano", "ltr"],
+      ["pt", "Portuguese", "Português", "ltr"],
+      ["nl", "Dutch", "Nederlands", "ltr"],
+      ["ko", "Korean", "한국어", "ltr"],
+      ["zh", "Chinese", "中文", "ltr"],
+      ["ru", "Russian", "Русский", "ltr"],
+      ["hi", "Hindi", "हिन्दी", "ltr"],
+      ["ur", "Urdu", "اردو", "rtl"],
+    ].map(([code, name, nativeName, direction]) => ({ code, name, nativeName, direction })),
+    skipDuplicates: true,
+  });
+
+  const restaurantId = "restaurant-nomi-default";
+
   for (const [id, name, description, price, imageUrl, category] of products) {
+    const categoryRecord = await prisma.category.upsert({
+      where: { restaurantId_name: { restaurantId, name: category } },
+      update: {},
+      create: { restaurantId, name: category },
+    });
     await prisma.product.upsert({
       where: { id },
-      update: { name, description, price, imageUrl, category, currency: "DH", isVisible: true },
-      create: { id, name, description, price, imageUrl, category, currency: "DH", isVisible: true },
+      update: { name, description, sourceLanguageCode: "en", restaurantId, categoryId: categoryRecord.id, price, imageUrl, category, currency: "DH", isVisible: true },
+      create: {
+        id,
+        name,
+        description,
+        sourceLanguageCode: "en",
+        restaurantId,
+        categoryId: categoryRecord.id,
+        price,
+        imageUrl,
+        category,
+        currency: "DH",
+        isVisible: true,
+      },
+    });
+
+    await prisma.productTranslation.upsert({
+      where: { productId_languageCode: { productId: id, languageCode: "en" } },
+      update: { name, description },
+      create: { productId: id, languageCode: "en", name, description },
     });
   }
 

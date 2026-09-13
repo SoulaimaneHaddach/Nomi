@@ -1,6 +1,6 @@
 import { Router } from "express";
 import rateLimit from "express-rate-limit";
-import { changeAdminCredentials, loginAdmin } from "../controllers/authController.js";
+import { changeAdminCredentials, changePin, getCurrentUser, getPinStatus, loginAdmin, loginOwner, registerOwner, setupPin, verifyPin } from "../controllers/authController.js";
 import { requireAdmin } from "../middleware/requireAdmin.js";
 
 const authRoutes = Router();
@@ -13,6 +13,13 @@ const authRateLimit = rateLimit({
 });
 
 authRoutes.post("/login", authRateLimit, loginAdmin);
+authRoutes.post("/owner-login", authRateLimit, loginOwner);
+authRoutes.post("/register", authRateLimit, registerOwner);
+authRoutes.get("/me", requireAdmin, getCurrentUser);
 authRoutes.patch("/credentials", authRateLimit, requireAdmin, changeAdminCredentials);
+authRoutes.get("/pin", requireAdmin, getPinStatus);
+authRoutes.post("/pin", authRateLimit, requireAdmin, setupPin);
+authRoutes.post("/pin/verify", authRateLimit, requireAdmin, verifyPin);
+authRoutes.patch("/pin", authRateLimit, requireAdmin, changePin);
 
 export default authRoutes;

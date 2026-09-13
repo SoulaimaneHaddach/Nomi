@@ -190,8 +190,232 @@ button {
   font-size: 0.75rem;
 }
 
+.nomi-register-gate {
+  max-width: 42rem;
+  padding: clamp(1.5rem, 5vw, 3rem);
+  transform: perspective(1100px) rotateX(0.6deg);
+}
+
+.nomi-register-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.nomi-register-mascot {
+  width: 3.5rem;
+  height: 3.5rem;
+  flex: 0 0 auto;
+}
+
+.nomi-register-brand-name {
+  display: block;
+  margin-top: 0.15rem;
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--nomi-ink);
+}
+
+.nomi-register-gate h1 {
+  max-width: 22rem;
+  font-size: clamp(2rem, 5vw, 3rem);
+}
+
+.nomi-register-form {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin-top: 1.8rem;
+}
+
+.nomi-register-form label {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.nomi-register-form label span {
+  color: #4a4038;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.nomi-register-form input {
+  min-height: 3rem;
+  border: 1px solid rgba(43, 35, 32, 0.16);
+  border-radius: 0.7rem;
+  background: rgba(255, 255, 255, 0.82);
+  padding: 0.7rem 0.85rem;
+  color: var(--nomi-ink);
+  box-shadow: 0 2px 0 rgba(43, 35, 32, 0.04) inset;
+  transition: border-color 160ms ease, box-shadow 160ms ease, background-color 160ms ease;
+}
+
+.nomi-register-form input::placeholder {
+  color: rgba(110, 104, 95, 0.62);
+}
+
+.nomi-register-form input:hover {
+  border-color: rgba(63, 156, 140, 0.45);
+}
+
+.nomi-register-form input:focus-visible {
+  border-color: var(--nomi-accent);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(63, 156, 140, 0.14);
+  outline: none;
+}
+
+.nomi-register-wide,
+.nomi-register-form .nomi-admin-error,
+.nomi-register-form button {
+  grid-column: 1 / -1;
+}
+
+.nomi-register-form button {
+  min-height: 3rem;
+  margin-top: 0.35rem;
+  border-radius: 0.7rem;
+  box-shadow: 0 4px 0 rgba(43, 35, 32, 0.12);
+  transition: transform 160ms ease, box-shadow 160ms ease, opacity 160ms ease;
+}
+
+.nomi-register-form button:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 0 rgba(43, 35, 32, 0.12);
+}
+
+.nomi-register-form button:not(:disabled):active {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 rgba(43, 35, 32, 0.12);
+}
+
+.nomi-register-gate > .nomi-admin-back {
+  display: block;
+  margin: 1rem auto 0;
+  background: transparent;
+  color: #6e685f;
+  font-weight: 500;
+}
+
+@media (max-width: 38rem) {
+  .nomi-register-form {
+    grid-template-columns: 1fr;
+  }
+
+  .nomi-register-wide,
+  .nomi-register-form .nomi-admin-error,
+  .nomi-register-form button {
+    grid-column: auto;
+  }
+}
+
+.nomi-public-action {
+  border: 1px solid rgba(63, 156, 140, 0.35);
+  border-radius: 999px;
+  background: var(--nomi-accent);
+  padding: 0.65rem 1rem;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.nomi-public-action.is-secondary {
+  background: transparent;
+  color: var(--nomi-ink);
+}
+
+.nomi-public-action:hover,
+.nomi-public-action:focus-visible {
+  box-shadow: 0 3px 0 rgba(43, 35, 32, 0.14);
+  transform: translateY(-1px);
+}
+
+.nomi-pin-gate {
+  text-align: center;
+}
+
+.nomi-pin-display {
+  display: flex;
+  justify-content: center;
+  gap: 0.65rem;
+  margin: 1.5rem 0;
+}
+
+.nomi-pin-display span {
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 2px solid rgba(63, 156, 140, 0.45);
+  border-radius: 999px;
+}
+
+.nomi-pin-display span.is-filled {
+  background: var(--nomi-accent);
+}
+
+.nomi-pin-keypad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.55rem;
+  max-width: 16rem;
+  margin: 0 auto 1rem;
+}
+
+.nomi-pin-keypad button {
+  min-height: 2.75rem;
+  border: 1px solid rgba(43, 35, 32, 0.12);
+  border-radius: 0.55rem;
+  background: #fff;
+  color: var(--nomi-ink);
+  font-weight: 600;
+}
+
+.nomi-pin-keypad button:hover,
+.nomi-pin-keypad button:focus-visible {
+  border-color: var(--nomi-accent);
+  background: rgba(63, 156, 140, 0.08);
+}
+
+.nomi-pin-gate > .nomi-admin-submit,
+.nomi-pin-gate > .nomi-admin-back {
+  display: block;
+  width: 100%;
+  margin-top: 0.65rem;
+}
+
 .nomi-admin-dashboard {
   padding: clamp(1.25rem, 4vw, 2.5rem);
+}
+
+.nomi-admin-workspace {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  border: 1px solid rgba(63, 156, 140, 0.24);
+  border-radius: 0.85rem;
+  background: rgba(238, 248, 244, 0.72);
+  padding: 1rem;
+}
+
+.nomi-admin-workspace h2 {
+  margin-top: 0.25rem;
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+}
+
+.nomi-admin-workspace p {
+  margin-top: 0.3rem;
+  color: #6e685f;
+  font-size: 0.75rem;
+  overflow-wrap: anywhere;
+}
+
+.nomi-admin-workspace svg {
+  flex: 0 0 auto;
+  border: 0.45rem solid #fffdf8;
+  border-radius: 0.35rem;
 }
 
 .nomi-admin-header,
@@ -249,6 +473,129 @@ button {
 
 .nomi-admin-section {
   margin-top: 2rem;
+}
+
+.nomi-platform-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.nomi-platform-filters input,
+.nomi-platform-filters select {
+  min-height: 2.45rem;
+  border: 1px solid rgba(43, 35, 32, 0.14);
+  border-radius: 0.55rem;
+  background: rgba(255, 255, 255, 0.78);
+  padding: 0.55rem 0.7rem;
+  color: var(--nomi-ink);
+  font-size: 0.78rem;
+}
+
+.nomi-platform-filters input:focus-visible,
+.nomi-platform-filters select:focus-visible {
+  outline: 2px solid var(--nomi-accent);
+  outline-offset: 2px;
+}
+
+.nomi-platform-table {
+  display: grid;
+  gap: 0.65rem;
+  margin-top: 1rem;
+}
+
+.nomi-platform-row {
+  display: grid;
+  grid-template-columns: 1.2fr 1.2fr 0.9fr 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  border: 1px solid rgba(43, 35, 32, 0.1);
+  border-radius: 0.75rem;
+  background: rgba(255, 253, 248, 0.72);
+  padding: 0.9rem;
+}
+
+.nomi-platform-row > div {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.nomi-platform-row strong {
+  overflow-wrap: anywhere;
+  font-size: 0.82rem;
+}
+
+.nomi-platform-row span {
+  color: #6e685f;
+  font-size: 0.7rem;
+}
+
+.nomi-platform-business span {
+  color: var(--nomi-accent);
+}
+
+.nomi-platform-status-actions {
+  justify-items: end;
+}
+
+.nomi-platform-status-actions button {
+  border: 1px solid rgba(43, 35, 32, 0.14);
+  border-radius: 0.45rem;
+  background: transparent;
+  padding: 0.42rem 0.6rem;
+  color: var(--nomi-ink);
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.nomi-platform-status {
+  border-radius: 999px;
+  padding: 0.25rem 0.5rem;
+  font-size: 0.62rem !important;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}
+
+.nomi-platform-status.is-active {
+  background: rgba(63, 156, 140, 0.14);
+  color: #2f8175;
+}
+
+.nomi-platform-status.is-suspended {
+  background: rgba(163, 76, 63, 0.12);
+  color: #a34c3f;
+}
+
+.nomi-platform-empty {
+  margin-top: 1rem;
+  color: #6e685f;
+  font-size: 0.8rem;
+}
+
+@media (max-width: 62rem) {
+  .nomi-platform-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .nomi-platform-status-actions {
+    justify-items: start;
+  }
+}
+
+@media (max-width: 38rem) {
+  .nomi-platform-filters {
+    width: 100%;
+  }
+
+  .nomi-platform-filters input,
+  .nomi-platform-filters select {
+    flex: 1 1 100%;
+  }
+
+  .nomi-platform-row {
+    grid-template-columns: 1fr;
+  }
 }
 
 .nomi-admin-editor {
@@ -889,4 +1236,125 @@ button {
 .nomi-admin-submit {
   width: 100%;
   margin-top: 0.75rem;
+}
+
+.nomi-admin-translations {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 0.8rem;
+  margin-top: 0.35rem;
+  border-top: 1px solid rgba(43, 35, 32, 0.1);
+  padding-top: 1rem;
+}
+
+.nomi-admin-translations-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.nomi-admin-translations h3 {
+  margin-top: 0.2rem;
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+}
+
+.nomi-admin-add-language,
+.nomi-admin-translation-row button {
+  border: 1px solid rgba(63, 156, 140, 0.35);
+  border-radius: 0.5rem;
+  background: rgba(238, 248, 244, 0.8);
+  padding: 0.55rem 0.75rem;
+  color: #2f8175;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.nomi-admin-language-picker {
+  display: grid;
+  gap: 0.5rem;
+  border: 1px solid rgba(43, 35, 32, 0.12);
+  border-radius: 0.65rem;
+  background: rgba(255, 255, 255, 0.75);
+  padding: 0.65rem;
+}
+
+.nomi-admin-language-picker input,
+.nomi-admin-translation-row input,
+.nomi-admin-translation-row textarea {
+  min-height: 2.35rem;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid rgba(43, 35, 32, 0.14);
+  border-radius: 0.5rem;
+  background: #fff;
+  padding: 0.55rem 0.7rem;
+  color: var(--nomi-ink);
+}
+
+.nomi-admin-translation-row textarea {
+  min-height: 4rem;
+  resize: vertical;
+}
+
+.nomi-admin-language-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.nomi-admin-language-options button {
+  border: 1px solid rgba(43, 35, 32, 0.12);
+  border-radius: 999px;
+  background: #fffdf8;
+  padding: 0.45rem 0.65rem;
+  color: var(--nomi-ink);
+  font-size: 0.72rem;
+}
+
+.nomi-admin-language-options span {
+  color: #8a8178;
+  font-size: 0.65rem;
+}
+
+.nomi-admin-translation-row {
+  display: grid;
+  grid-template-columns: minmax(7rem, 0.6fr) minmax(0, 1fr) minmax(0, 1.5fr) auto auto;
+  align-items: start;
+  gap: 0.55rem;
+  border: 1px solid rgba(43, 35, 32, 0.1);
+  border-radius: 0.65rem;
+  background: rgba(255, 253, 248, 0.75);
+  padding: 0.7rem;
+}
+
+.nomi-admin-translation-label {
+  display: grid;
+  gap: 0.15rem;
+  padding-top: 0.55rem;
+  color: var(--nomi-ink);
+  font-size: 0.75rem;
+}
+
+.nomi-admin-translation-label span {
+  color: #8a8178;
+  font-size: 0.65rem;
+}
+
+.nomi-admin-remove-translation {
+  border-color: rgba(163, 76, 63, 0.25) !important;
+  background: transparent !important;
+  color: #a34c3f !important;
+}
+
+@media (max-width: 850px) {
+  .nomi-admin-translation-row {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .nomi-admin-translation-label,
+  .nomi-admin-translation-row textarea {
+    grid-column: 1 / -1;
+  }
 }

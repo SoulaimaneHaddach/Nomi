@@ -1,13 +1,15 @@
-// pages/Menu.tsx
 import { startTransition, useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import type { ReactNode } from "react";
 import Header from "../components/Header";
+import { Mascot } from "../components/Header";
 import FloatingSymbol from "../components/FloatingSymbol";
 import { FLOATING_SYMBOLS } from "../components/floatingSymbols";
 import CategoryNav from "../components/CategoryNav";
 import DecorativeBackground from "../components/DecorativeBackground";
 import ProductCard from "../components/ProductCard";
 import ProductModal from "../components/ProductModal";
-
 
 export type Product = {
   id: string;
@@ -19,210 +21,143 @@ export type Product = {
   category: string;
 };
 
-const CATEGORIES = ["All", "Coffee", "Breakfast", "Food", "Desserts", "Drinks"];
-const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
+type Language = {
+  code: string;
+  name: string;
+  nativeName: string;
+  direction: string;
+};
 
-const PRODUCTS: Product[] = [
-  {
-    id: "cappuccino",
-    name: "Cappuccino",
-    description: "Smooth espresso with steamed milk and foam",
-    price: 22,
-    currency: "DH",
-    image: "/imgs/webp/cappuccino.webp",
-    category: "Coffee",
-  },
-  {
-    id: "iced-latte",
-    name: "Iced Latte",
-    description: "Cold espresso, milk, over ice",
-    price: 24,
-    currency: "DH",
-    image: "/imgs/webp/iced-latte.webp",
-    category: "Coffee",
-  },
-  {
-    id: "espresso",
-    name: "Espresso",
-    description: "Rich, concentrated shot with a golden crema",
-    price: 15,
-    currency: "DH",
-    image: "/imgs/webp/espresso.webp",
-    category: "Coffee",
-  },
-  {
-    id: "flat-white",
-    name: "Flat White",
-    description: "Double espresso with silky microfoam milk",
-    price: 23,
-    currency: "DH",
-    image: "/imgs/webp/flat-white.webp",
-    category: "Coffee",
-  },
-  {
-    id: "avocado-toast",
-    name: "Avocado Toast",
-    description: "Sourdough, smashed avocado, chili flakes, lemon",
-    price: 38,
-    currency: "DH",
-    image: "/imgs/webp/avocado-toast.webp",
-    category: "Breakfast",
-  },
-  {
-    id: "croissant",
-    name: "Butter Croissant",
-    description: "Flaky, buttery, baked fresh every morning",
-    price: 15,
-    currency: "DH",
-    image: "/imgs/webp/croissant.webp",
-    category: "Breakfast",
-  },
-  {
-    id: "granola-bowl",
-    name: "Granola Bowl",
-    description: "Yogurt, house granola, honey, seasonal fruit",
-    price: 32,
-    currency: "DH",
-    image: "/imgs/webp/granola-bowl.webp",
-    category: "Breakfast",
-  },
-  {
-    id: "shakshuka",
-    name: "Shakshuka",
-    description: "Poached eggs in spiced tomato sauce, warm bread",
-    price: 42,
-    currency: "DH",
-    image: "/imgs/webp/shakshuka.webp",
-    category: "Breakfast",
-  },
-  {
-    id: "club-sandwich",
-    name: "Club Sandwich",
-    description: "Chicken, egg, lettuce, tomato, toasted bread",
-    price: 45,
-    currency: "DH",
-    image: "/imgs/webp/club-sandwich.webp",
-    category: "Food",
-  },
-  {
-    id: "caesar-salad",
-    name: "Caesar Salad",
-    description: "Romaine, parmesan, croutons, house Caesar dressing",
-    price: 40,
-    currency: "DH",
-    image: "/imgs/webp/caesar-salad.webp",
-    category: "Food",
-  },
-  {
-    id: "margherita-panini",
-    name: "Margherita Panini",
-    description: "Mozzarella, tomato, basil, pressed on ciabatta",
-    price: 36,
-    currency: "DH",
-    image: "/imgs/webp/margherita-panini.webp",
-    category: "Food",
-  },
-  {
-    id: "chocolate-brownie",
-    name: "Chocolate Brownie",
-    description: "Dense, fudgy, served warm",
-    price: 20,
-    currency: "DH",
-    image: "/imgs/webp/chocolate-brownie.webp",
-    category: "Desserts",
-  },
-  {
-    id: "cheesecake",
-    name: "Cheesecake",
-    description: "Creamy New York style, biscuit base",
-    price: 28,
-    currency: "DH",
-    image: "/imgs/webp/cheesecake.webp",
-    category: "Desserts",
-  },
-  {
-    id: "tiramisu",
-    name: "Tiramisu",
-    description: "Espresso-soaked ladyfingers, mascarpone, cocoa",
-    price: 30,
-    currency: "DH",
-    image: "/imgs/webp/tiramisu.webp",
-    category: "Desserts",
-  },
-  {
-    id: "orange-juice",
-    name: "Fresh Orange Juice",
-    description: "Cold-pressed, no sugar added",
-    price: 20,
-    currency: "DH",
-    image: "/imgs/webp/orange-juice.webp",
-    category: "Drinks",
-  },
-  {
-    id: "mint-lemonade",
-    name: "Mint Lemonade",
-    description: "Fresh lemon, mint, lightly sparkling",
-    price: 22,
-    currency: "DH",
-    image: "/imgs/webp/mint-lemonade.webp",
-    category: "Drinks",
-  },
-  {
-    id: "iced-tea",
-    name: "Iced Tea",
-    description: "House-brewed, lightly sweetened, over ice",
-    price: 18,
-    currency: "DH",
-    image: "/imgs/webp/iced-tea.webp",
-    category: "Drinks",
-  },
-];
+type ApiProduct = Omit<Product, "image" | "name" | "description"> & {
+  imageUrl: string;
+  name: string;
+  description: string;
+  sourceLanguageCode: string;
+  translations: Array<{ languageCode: string; name: string; description: string }>;
+};
+
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
+type MenuState = "loading" | "ready" | "not-found" | "error";
+
+function PublicState({ title, children, actions }: { title: string; children: string; actions?: ReactNode }) {
+  return (
+    <div className="relative isolate min-h-dvh w-full overflow-hidden text-[#2B2320]">
+      <div className="nomi-site-background" aria-hidden="true" />
+      <DecorativeBackground />
+      <main className="relative z-10 mx-auto flex min-h-dvh w-full max-w-2xl items-center justify-center px-5 py-10 sm:px-8">
+        <section className="nomi-window nomi-paper w-full rounded-[1.75rem] px-6 py-12 text-center sm:rounded-[2.25rem] sm:px-12 sm:py-16">
+          <div className="mx-auto flex items-center justify-center gap-3">
+            <div className="h-20 w-20 sm:h-28 sm:w-28">
+              <Mascot />
+            </div>
+            <span className="font-display text-5xl font-semibold text-[#2B2320] sm:text-7xl">Nomi</span>
+          </div>
+          <h1 className="mt-8 font-display text-2xl font-semibold leading-tight text-[#2B2320] sm:text-4xl">{title}</h1>
+          <p className="mx-auto mt-5 max-w-lg text-sm leading-relaxed text-[#6E685F] sm:text-base">{children}</p>
+          {actions}
+        </section>
+      </main>
+    </div>
+  );
+}
+
+export function EmptyNomiState() {
+  const navigate = useNavigate();
+  return (
+    <PublicState
+      title="Digital menus for cafés & businesses."
+      actions={(
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          <button type="button" className="nomi-public-action" onClick={() => navigate("/login")}>Owner Login</button>
+          <button type="button" className="nomi-public-action is-secondary" onClick={() => navigate("/register")}>Create Business Account</button>
+        </div>
+      )}
+    >
+      Nomi lets businesses create and manage their digital menu and lets customers access it easily from their phone or tablet.
+    </PublicState>
+  );
+}
+
+function BusinessNotFound() {
+  return (
+    <PublicState title="Business not found">
+      This menu link does not point to an existing business. Check the link and try again.
+    </PublicState>
+  );
+}
+
+function localizeProduct(product: ApiProduct, languageCode: string): Product {
+  const translation = product.translations.find(({ languageCode: code }) => code === languageCode)
+    ?? product.translations.find(({ languageCode: code }) => code === product.sourceLanguageCode);
+
+  return {
+    id: product.id,
+    name: translation?.name ?? product.name,
+    description: translation?.description ?? product.description,
+    price: product.price,
+    currency: product.currency,
+    image: product.imageUrl,
+    category: product.category,
+  };
+}
 
 export default function Menu() {
   const [activeCategory, setActiveCategory] = useState("All");
-  const [pageDirection, setPageDirection] = useState<"next" | "previous">(
-    "next",
-  );
+  const [pageDirection, setPageDirection] = useState<"next" | "previous">("next");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [products, setProducts] = useState<Product[]>(PRODUCTS);
+  const [apiProducts, setApiProducts] = useState<ApiProduct[]>([]);
+  const [languages, setLanguages] = useState<Language[]>([]);
+  const [activeLanguageCode, setActiveLanguageCode] = useState("");
+  const { slug } = useParams();
+  const [menuState, setMenuState] = useState<MenuState>("loading");
 
   useEffect(() => {
-    fetch(`${API_URL}/api/products`)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error("Unable to load the latest menu.");
+    startTransition(() => setMenuState("loading"));
+    fetch(`${API_URL}/api/products/${slug}`)
+      .then(async (productResponse) => {
+        if (productResponse.status === 404) {
+          setMenuState("not-found");
+          return null;
         }
-        return response.json() as Promise<Array<Omit<Product, "image"> & { imageUrl: string }>>;
+        if (!productResponse.ok) throw new Error("Unable to load the latest menu.");
+        const loadedProducts = await productResponse.json() as ApiProduct[];
+        const languageResponse = await fetch(`${API_URL}/api/languages/menu/${slug}`);
+        if (!languageResponse.ok) throw new Error("Unable to load menu languages.");
+        return { loadedProducts, loadedLanguages: await languageResponse.json() as Language[] };
       })
-      .then((databaseProducts) => {
+      .then((result) => {
+        if (!result) return;
         startTransition(() => {
-          setProducts(
-            databaseProducts.map(({ imageUrl, ...product }) => ({
-              ...product,
-              image: imageUrl,
-            })),
-          );
+          setApiProducts(result.loadedProducts);
+          setLanguages(result.loadedLanguages);
+          setActiveLanguageCode((current) => current || result.loadedLanguages[0]?.code || "");
+          setMenuState("ready");
         });
       })
       .catch(() => {
+        setApiProducts([]);
+        setLanguages([]);
+        setMenuState("error");
       });
-  }, []);
+  }, [slug]);
 
+  const products = apiProducts.map((product) => localizeProduct(product, activeLanguageCode));
+  const categories = ["All", ...Array.from(new Set(products.map((product) => product.category)))];
+  const selectedCategory = categories.includes(activeCategory) ? activeCategory : "All";
   const popular = products.slice(0, 3);
+  const visibleProducts = selectedCategory === "All"
+    ? products
+    : products.filter((product) => product.category === selectedCategory);
 
-  const visibleProducts =
-    activeCategory === "All"
-      ? products
-      : products.filter((p) => p.category === activeCategory);
+  if (menuState === "not-found") return <BusinessNotFound />;
+  if (menuState === "error") {
+    return <PublicState title="Unable to load this menu">Please try this business link again in a moment.</PublicState>;
+  }
 
   const handleCategorySelect = (category: string) => {
-    const currentIndex = CATEGORIES.indexOf(activeCategory);
-    const nextIndex = CATEGORIES.indexOf(category);
-
-    if (nextIndex === currentIndex) {
-      return;
-    }
-
+    const currentIndex = categories.indexOf(selectedCategory);
+    const nextIndex = categories.indexOf(category);
+    if (nextIndex === currentIndex) return;
     setPageDirection(nextIndex > currentIndex ? "next" : "previous");
     setActiveCategory(category);
   };
@@ -231,127 +166,38 @@ export default function Menu() {
     <div className="relative isolate min-h-dvh w-full overflow-x-hidden text-[#2B2320]">
       <div className="nomi-site-background" aria-hidden="true" />
       <DecorativeBackground />
-
       <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-screen-2xl flex-col px-3 py-6 sm:px-6 sm:py-10 lg:px-10 lg:py-14">
         <main className="nomi-window nomi-paper mx-auto w-full max-w-6xl overflow-hidden rounded-[1.75rem] sm:rounded-[2.25rem]">
           <Header
             name="Nomi Project"
             tagline="Good coffee. Good vibes. No rush."
+            languages={languages}
+            activeLanguageCode={activeLanguageCode}
+            onLanguageChange={setActiveLanguageCode}
           />
-
           <div className="nomi-notebook">
             <div aria-hidden="true" className="nomi-menu-symbols">
               {FLOATING_SYMBOLS.map((symbol, index) => (
-                <div
-                  key={index}
-                  className="pointer-events-none absolute"
-                  style={{ top: symbol.top, left: symbol.left }}
-                >
-                  <FloatingSymbol
-                    size={symbol.size}
-                    rotate={symbol.rotate}
-                    opacity={symbol.opacity * 0.65}
-                    kind={symbol.kind}
-                    color={symbol.color}
-                  />
+                <div key={index} className="pointer-events-none absolute" style={{ top: symbol.top, left: symbol.left }}>
+                  <FloatingSymbol size={symbol.size} rotate={symbol.rotate} opacity={symbol.opacity * 0.65} kind={symbol.kind} color={symbol.color} />
                 </div>
               ))}
             </div>
-
-            <CategoryNav
-              categories={CATEGORIES}
-              active={activeCategory}
-              onSelect={handleCategorySelect}
-            />
-
+            <CategoryNav categories={categories} active={selectedCategory} onSelect={handleCategorySelect} />
             <div className="nomi-notebook-page">
-              <div aria-hidden="true" className="nomi-menu-symbols">
-                {FLOATING_SYMBOLS.map((symbol, index) => (
-                  <div
-                    key={index}
-                    className="pointer-events-none absolute"
-                    style={{ top: symbol.top, left: symbol.left }}
-                  >
-                    <FloatingSymbol
-                      size={symbol.size}
-                      rotate={symbol.rotate}
-                      opacity={symbol.opacity}
-                      kind={symbol.kind}
-                      color={symbol.color}
-                    />
-                  </div>
-                ))}
-                {FLOATING_SYMBOLS.slice(0, 3).map((symbol, index) => (
-                  <div
-                    key={`extra-${index}`}
-                    className="pointer-events-none absolute"
-                    style={{
-                      top: ["10%", "48%", "78%"][index],
-                      left: ["88%", "4%", "90%"][index],
-                    }}
-                  >
-                    <FloatingSymbol
-                      size={symbol.size * 0.9}
-                      rotate={symbol.rotate}
-                      opacity={symbol.opacity * 0.85}
-                      kind={symbol.kind}
-                      color={symbol.color}
-                    />
-                  </div>
-                ))}
-                {FLOATING_SYMBOLS.map((symbol, index) => (
-                  <div
-                    key={`ambient-${index}`}
-                    className="pointer-events-none absolute"
-                    style={{
-                      top: ["6%", "28%", "44%", "68%", "92%"][index],
-                      left: ["52%", "94%", "2%", "52%", "8%"][index],
-                    }}
-                  >
-                    <FloatingSymbol
-                      size={symbol.size * 0.72}
-                      rotate={symbol.rotate}
-                      opacity={Math.min(symbol.opacity * 1.15, 0.42)}
-                      kind={symbol.kind}
-                      color={symbol.color}
-                    />
-                  </div>
-                ))}
-              </div>
-
-              <div
-                key={activeCategory}
-                className={`nomi-notebook-page-content is-${pageDirection} px-4 pb-12 pt-1 sm:px-8 sm:pb-16 lg:px-10`}
-              >
-                {activeCategory === "All" && (
+              <div key={`${selectedCategory}-${activeLanguageCode}`} className={`nomi-notebook-page-content is-${pageDirection} px-4 pb-12 pt-1 sm:px-8 sm:pb-16 lg:px-10`}>
+                {selectedCategory === "All" && popular.length > 0 && (
                   <section className="mt-8 sm:mt-10">
-                    <h2 className="font-display text-xl font-semibold text-[#2B2320]">
-                      Popular
-                    </h2>
+                    <h2 className="font-display text-xl font-semibold text-[#2B2320]">Popular</h2>
                     <div className="mt-4 grid grid-cols-1 gap-4 min-[400px]:grid-cols-2 sm:gap-5 md:grid-cols-3">
-                      {popular.map((product) => (
-                        <ProductCard
-                          key={product.id}
-                          product={product}
-                          onSelect={() => setSelectedProduct(product)}
-                        />
-                      ))}
+                      {popular.map((product) => <ProductCard key={product.id} product={product} onSelect={() => setSelectedProduct(product)} />)}
                     </div>
                   </section>
                 )}
-
                 <section className="mt-10 sm:mt-12">
-                  <h2 className="font-display text-xl font-semibold text-[#2B2320]">
-                    {activeCategory === "All" ? "Full menu" : activeCategory}
-                  </h2>
+                  <h2 className="font-display text-xl font-semibold text-[#2B2320]">{selectedCategory === "All" ? "Full menu" : selectedCategory}</h2>
                   <div className="mt-4 grid grid-cols-1 gap-4 min-[400px]:grid-cols-2 sm:gap-5 md:grid-cols-3 lg:grid-cols-4">
-                    {visibleProducts.map((product) => (
-                      <ProductCard
-                        key={product.id}
-                        product={product}
-                        onSelect={() => setSelectedProduct(product)}
-                      />
-                    ))}
+                    {visibleProducts.map((product) => <ProductCard key={product.id} product={product} onSelect={() => setSelectedProduct(product)} />)}
                   </div>
                 </section>
               </div>
@@ -359,13 +205,7 @@ export default function Menu() {
           </div>
         </main>
       </div>
-
-      {selectedProduct && (
-        <ProductModal
-          product={selectedProduct}
-          onClose={() => setSelectedProduct(null)}
-        />
-      )}
+      {selectedProduct && <ProductModal product={selectedProduct} onClose={() => setSelectedProduct(null)} />}
     </div>
   );
 }

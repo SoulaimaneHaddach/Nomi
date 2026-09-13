@@ -7,26 +7,121 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Admin {
-  id           String   @id @default(cuid())
-  username     String   @unique
+enum UserRole {
+  PLATFORM_ADMIN
+  RESTAURANT_OWNER
+}
+
+enum MembershipRole {
+  OWNER
+  MANAGER
+}
+
+enum RestaurantStatus {
+  ACTIVE
+  SUSPENDED
+}
+
+model User {
+  id          String       @id @default(cuid())
+  email       String       @unique
+  name        String?
   passwordHash String
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  pinHash     String?
+  role        UserRole     @default(RESTAURANT_OWNER)
+  memberships Membership[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model Restaurant {
+  id           String        @id @default(cuid())
+  name         String
+  slug         String        @unique
+  logo         String?
+  status       RestaurantStatus @default(ACTIVE)
+  menuViews    Int           @default(0)
+  memberships  Membership[]
+  categories   Category[]
+  products     Product[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  lastActivityAt DateTime    @default(now())
+}
+
+model Membership {
+  id           String         @id @default(cuid())
+  userId       String
+  restaurantId String
+  role         MembershipRole @default(OWNER)
+  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  restaurant   Restaurant     @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  createdAt    DateTime       @default(now())
+
+  @@unique([userId, restaurantId])
+  @@index([restaurantId])
 }
 
 model Product {
-  id          String   @id @default(cuid())
-  name        String
-  description String
-  price       Decimal  @db.Decimal(10, 2)
-  currency    String   @default("DH")
-  imageUrl    String
-  category    String
-  isVisible   Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id                 String                @id @default(cuid())
+  restaurantId       String
+  categoryId         String
+  name               String
+  description        String
+  sourceLanguageCode String                @default("en")
+  sourceLanguage     Language              @relation("ProductSourceLanguage", fields: [sourceLanguageCode], references: [code])
+  restaurant         Restaurant            @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  categoryRelation   Category              @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  price              Decimal               @db.Decimal(10, 2)
+  currency           String                @default("DH")
+  imageUrl           String
+  category           String
+  isVisible          Boolean               @default(true)
+  translations       ProductTranslation[]
+  createdAt          DateTime              @default(now())
+  updatedAt          DateTime              @updatedAt
 
   @@index([category])
   @@index([isVisible])
+  @@index([restaurantId])
+  @@index([categoryId])
+}
+
+model Category {
+  id           String     @id @default(cuid())
+  restaurantId String
+  name         String
+  restaurant   Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  products     Product[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  @@unique([restaurantId, name])
+  @@index([restaurantId])
+}
+
+model Language {
+  code             String                @id
+  name             String
+  nativeName       String
+  direction        String                @default("ltr")
+  sourceProducts   Product[]             @relation("ProductSourceLanguage")
+  translations     ProductTranslation[]
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+}
+
+model ProductTranslation {
+  id           String   @id @default(cuid())
+  productId    String
+  languageCode String
+  name         String
+  description  String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  language     Language @relation(fields: [languageCode], references: [code], onDelete: Cascade)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([productId, languageCode])
+  @@index([languageCode])
 }

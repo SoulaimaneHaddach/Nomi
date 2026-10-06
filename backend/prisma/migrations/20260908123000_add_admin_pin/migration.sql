@@ -1,1 +1,0 @@
-ALTER TABLE "Admin" ADD COLUMN "pinHash" TEXT;

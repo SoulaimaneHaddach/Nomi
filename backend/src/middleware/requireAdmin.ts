@@ -55,11 +55,17 @@ export async function requireAdmin(request: Request, response: Response, next: N
       response.status(401).json({ message: "User account not found" });
       return;
     }
+    const tokenAuthVersion = typeof payload.authVersion === "number" ? payload.authVersion : 0;
+    if (tokenAuthVersion !== user.authVersion) {
+      response.status(401).json({ message: "Session expired. Please sign in again." });
+      return;
+    }
 
     const authenticatedUser = {
       id: user.id,
       email: user.email,
       role: user.role,
+      authVersion: user.authVersion,
       memberships: user.memberships,
     };
     request.user = authenticatedUser;

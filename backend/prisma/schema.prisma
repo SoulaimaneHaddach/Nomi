@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -29,9 +29,23 @@ model User {
   passwordHash String
   pinHash     String?
   role        UserRole     @default(RESTAURANT_OWNER)
+  authVersion  Int          @default(0)
   memberships Membership[]
+  passwordResetTokens PasswordResetToken[]
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model Restaurant {
@@ -67,7 +81,7 @@ model Product {
   restaurantId       String
   categoryId         String
   name               String
-  description        String
+  description        String                @db.Text
   sourceLanguageCode String                @default("en")
   sourceLanguage     Language              @relation("ProductSourceLanguage", fields: [sourceLanguageCode], references: [code])
   restaurant         Restaurant            @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
@@ -116,7 +130,7 @@ model ProductTranslation {
   productId    String
   languageCode String
   name         String
-  description  String
+  description  String   @db.Text
   product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
   language     Language @relation(fields: [languageCode], references: [code], onDelete: Cascade)
   createdAt    DateTime @default(now())

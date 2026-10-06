@@ -36,6 +36,11 @@ type ApiProduct = Omit<Product, "image" | "name" | "description"> & {
   translations: Array<{ languageCode: string; name: string; description: string }>;
 };
 
+type ApiMenu = {
+  restaurant: { name: string };
+  products: ApiProduct[];
+};
+
 const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:4000";
 type MenuState = "loading" | "ready" | "not-found" | "error";
 
@@ -106,6 +111,7 @@ export default function Menu() {
   const [pageDirection, setPageDirection] = useState<"next" | "previous">("next");
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [apiProducts, setApiProducts] = useState<ApiProduct[]>([]);
+  const [restaurantName, setRestaurantName] = useState("");
   const [languages, setLanguages] = useState<Language[]>([]);
   const [activeLanguageCode, setActiveLanguageCode] = useState("");
   const { slug } = useParams();
@@ -120,15 +126,16 @@ export default function Menu() {
           return null;
         }
         if (!productResponse.ok) throw new Error("Unable to load the latest menu.");
-        const loadedProducts = await productResponse.json() as ApiProduct[];
+        const menu = await productResponse.json() as ApiMenu;
         const languageResponse = await fetch(`${API_URL}/api/languages/menu/${slug}`);
         if (!languageResponse.ok) throw new Error("Unable to load menu languages.");
-        return { loadedProducts, loadedLanguages: await languageResponse.json() as Language[] };
+        return { menu, loadedLanguages: await languageResponse.json() as Language[] };
       })
       .then((result) => {
         if (!result) return;
         startTransition(() => {
-          setApiProducts(result.loadedProducts);
+          setRestaurantName(result.menu.restaurant.name);
+          setApiProducts(result.menu.products);
           setLanguages(result.loadedLanguages);
           setActiveLanguageCode((current) => current || result.loadedLanguages[0]?.code || "");
           setMenuState("ready");
@@ -169,8 +176,7 @@ export default function Menu() {
       <div className="relative z-10 mx-auto flex min-h-dvh w-full max-w-screen-2xl flex-col px-3 py-6 sm:px-6 sm:py-10 lg:px-10 lg:py-14">
         <main className="nomi-window nomi-paper mx-auto w-full max-w-6xl overflow-hidden rounded-[1.75rem] sm:rounded-[2.25rem]">
           <Header
-            name="Nomi Project"
-            tagline="Good coffee. Good vibes. No rush."
+            name={restaurantName}
             languages={languages}
             activeLanguageCode={activeLanguageCode}
             onLanguageChange={setActiveLanguageCode}

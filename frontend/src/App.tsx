@@ -3,6 +3,7 @@ import Menu, { EmptyNomiState } from "./pages/Menu";
 import Admin from "./pages/Admin";
 import Register from "./pages/Register";
 import Platform from "./pages/Platform";
+import PasswordRecovery from "./pages/PasswordRecovery";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
         <Route path="/admin" element={<Admin />} />
         <Route path="/register" element={<Register />} />
         <Route path="/platform" element={<Platform />} />
+        <Route path="/password-recovery" element={<PasswordRecovery />} />
         <Route path="/:slug" element={<Menu />} />
       </Routes>
     </BrowserRouter>

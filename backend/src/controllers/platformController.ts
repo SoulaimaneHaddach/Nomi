@@ -7,17 +7,20 @@ export async function listRestaurants(request: Request, response: Response) {
   const restaurants = await prisma.restaurant.findMany({
     where: {
       ...(status ? { status } : {}),
+      memberships: {
+        some: { role: "OWNER", user: { role: "RESTAURANT_OWNER" } },
+      },
       ...(search ? {
         OR: [
-          { name: { contains: search, mode: "insensitive" } },
-          { slug: { contains: search, mode: "insensitive" } },
-          { memberships: { some: { user: { email: { contains: search, mode: "insensitive" } } } } },
+          { name: { contains: search } },
+          { slug: { contains: search } },
+          { memberships: { some: { role: "OWNER", user: { role: "RESTAURANT_OWNER", email: { contains: search } } } } },
         ],
       } : {}),
     },
     orderBy: { createdAt: "desc" },
     include: {
-      memberships: { where: { role: "OWNER" }, include: { user: { select: { name: true, email: true } } } },
+      memberships: { where: { role: "OWNER", user: { role: "RESTAURANT_OWNER" } }, include: { user: { select: { name: true, email: true } } } },
       _count: { select: { products: true, categories: true } },
     },
   });

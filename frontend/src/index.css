@@ -439,6 +439,64 @@ button {
   flex: 1 1 100%;
 }
 
+.nomi-platform-header > div:first-child {
+  flex: 1 1 auto;
+  min-width: 14rem;
+}
+
+.nomi-owner-admin-header > div:first-child {
+  flex: 1 1 auto;
+  min-width: 14rem;
+}
+
+.nomi-admin-lock.nomi-admin-logout {
+  border-color: #f44336;
+  background: #f44336;
+  color: #fff;
+}
+
+.nomi-admin-lock.nomi-admin-logout:hover {
+  border-color: #e53935;
+  background: #e53935;
+}
+
+.nomi-admin-header-actions {
+  display: flex;
+  flex: 1 1 100%;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.nomi-platform-account-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.85rem;
+  margin-left: auto;
+}
+
+.nomi-platform-account {
+  min-width: 0;
+  text-align: right;
+}
+
+.nomi-platform-account strong,
+.nomi-platform-account span {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.nomi-platform-account strong {
+  font-size: 0.85rem;
+}
+
+.nomi-platform-account span {
+  margin-top: 0.2rem;
+  color: #6e685f;
+  font-size: 0.72rem;
+}
+
 .nomi-admin-lock {
   background: transparent;
   color: var(--nomi-ink);
@@ -695,7 +753,16 @@ button {
 }
 
 @media (max-width: 700px) {
-  .nomi-admin-header > .nomi-admin-lock {
+  .nomi-platform-header > div:first-child {
+    flex: 1 1 100%;
+  }
+
+  .nomi-platform-account-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .nomi-admin-header > .nomi-admin-lock:not(.nomi-admin-logout) {
     flex: 1 1 calc(50% - 0.5rem);
   }
 
@@ -924,6 +991,21 @@ button {
   .nomi-admin-row {
     align-items: flex-start;
     flex-direction: column;
+  }
+
+  .nomi-owner-admin-header > div:first-child,
+  .nomi-owner-admin-header > .nomi-admin-logout,
+  .nomi-owner-admin-header > .nomi-admin-header-actions {
+    width: 100%;
+  }
+
+  .nomi-owner-admin-header > .nomi-admin-logout {
+    align-self: flex-end;
+    flex: 0 0 auto;
+  }
+
+  .nomi-owner-admin-header > .nomi-admin-header-actions {
+    justify-content: flex-start;
   }
 
   .nomi-admin-metrics {

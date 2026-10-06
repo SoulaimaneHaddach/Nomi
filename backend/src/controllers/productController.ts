@@ -57,7 +57,7 @@ async function saveTranslations(productId: string, sourceLanguageCode: string, t
 }
 
 export async function listProducts(_request: Request, response: Response) {
-  const slug = typeof _request.params.slug === "string" ? _request.params.slug : "nomi-cafe";
+  const slug = typeof _request.params.slug === "string" ? _request.params.slug : "";
   const restaurant = await prisma.restaurant.findUnique({ where: { slug } });
   if (!restaurant || restaurant.status === "SUSPENDED") {
     response.status(404).json({ message: "Restaurant not found" });
@@ -72,7 +72,10 @@ export async function listProducts(_request: Request, response: Response) {
     include: translationInclude,
   });
 
-  response.json(products.map(serializeProduct));
+  response.json({
+    restaurant: { name: restaurant.name },
+    products: products.map(serializeProduct),
+  });
 }
 
 export async function listAdminProducts(_request: Request, response: Response) {

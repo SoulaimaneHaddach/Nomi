@@ -1,2 +1,0 @@
-ALTER TABLE "User" ADD COLUMN "name" TEXT;
-DROP TABLE "Invitation";

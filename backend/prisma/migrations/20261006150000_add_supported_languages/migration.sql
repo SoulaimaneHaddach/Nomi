@@ -1,0 +1,16 @@
+INSERT IGNORE INTO `Language` (`code`, `name`, `nativeName`, `direction`, `createdAt`, `updatedAt`) VALUES
+  ('en', 'English', 'English', 'ltr', CURRENT_TIMESTAMP(3), CURRENT_TIMESTAMP(3)),
+  ('fr', 'French', 'Français', 'ltr', CURRENT_TIMESTAMP(3), CURRENT_TIMESTAMP(3)),
+  ('ar', 'Arabic', 'العربية', 'rtl', CURRENT_TIMESTAMP(3), CURRENT_TIMESTAMP(3)),
+  ('es', 'Spanish', 'Español', 'ltr', CURRENT_TIMESTAMP(3), CURRENT_TIMESTAMP(3)),
+  ('de', 'German', 'Deutsch', 'ltr', CURRENT_TIMESTAMP(3), CURRENT_TIMESTAMP(3)),
+  ('tr', 'Turkish', 'Türkçe', 'ltr', CURRENT_TIMESTAMP(3), CURRENT_TIMESTAMP(3)),
+  ('ja', 'Japanese', '日本語', 'ltr', CURRENT_TIMESTAMP(3), CURRENT_TIMESTAMP(3)),
+  ('it', 'Italian', 'Italiano', 'ltr', CURRENT_TIMESTAMP(3), CURRENT_TIMESTAMP(3)),
+  ('pt', 'Portuguese', 'Português', 'ltr', CURRENT_TIMESTAMP(3), CURRENT_TIMESTAMP(3)),
+  ('nl', 'Dutch', 'Nederlands', 'ltr', CURRENT_TIMESTAMP(3), CURRENT_TIMESTAMP(3)),
+  ('ko', 'Korean', '한국어', 'ltr', CURRENT_TIMESTAMP(3), CURRENT_TIMESTAMP(3)),
+  ('zh', 'Chinese', '中文', 'ltr', CURRENT_TIMESTAMP(3), CURRENT_TIMESTAMP(3)),
+  ('ru', 'Russian', 'Русский', 'ltr', CURRENT_TIMESTAMP(3), CURRENT_TIMESTAMP(3)),
+  ('hi', 'Hindi', 'हिन्दी', 'ltr', CURRENT_TIMESTAMP(3), CURRENT_TIMESTAMP(3)),
+  ('ur', 'Urdu', 'اردو', 'rtl', CURRENT_TIMESTAMP(3), CURRENT_TIMESTAMP(3));

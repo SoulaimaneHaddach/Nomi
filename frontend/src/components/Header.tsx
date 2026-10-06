@@ -7,7 +7,6 @@ import { useRef } from "react";
 
 type HeaderProps = {
   name: string;
-  tagline: string;
   languages: Array<{ code: string; name: string; nativeName: string; direction: string }>;
   activeLanguageCode: string;
   onLanguageChange: (code: string) => void;
@@ -68,7 +67,7 @@ export function Mascot() {
   );
 }
 
-export default function Header({ name, tagline, languages, activeLanguageCode, onLanguageChange }: HeaderProps) {
+export default function Header({ name, languages, activeLanguageCode, onLanguageChange }: HeaderProps) {
   const navigate = useNavigate();
   const secretClicks = useRef(0);
   const resetSecretClicks = useRef<number | undefined>(undefined);
@@ -119,12 +118,6 @@ export default function Header({ name, tagline, languages, activeLanguageCode, o
           </h1>
         </div>
         <LanguageSwitcher languages={languages} activeCode={activeLanguageCode} onChange={onLanguageChange} />
-      </div>
-
-      <div className="relative mt-4 text-center sm:mt-5">
-        <p className="text-sm font-medium text-[#6E685F] sm:text-base">
-          {tagline}
-        </p>
       </div>
 
       <button

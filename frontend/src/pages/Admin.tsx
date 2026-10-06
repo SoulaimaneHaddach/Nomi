@@ -48,7 +48,7 @@ type Workspace = {
 
 const categories = ["Coffee", "Breakfast", "Food", "Desserts", "Drinks"];
 
-function LoginGate({ onUnlock, onBack }: { onUnlock: (token: string) => void; onBack: () => void }) {
+function LoginGate({ onUnlock, onBack, onForgotPassword }: { onUnlock: (token: string) => void; onBack: () => void; onForgotPassword: () => void }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -112,6 +112,7 @@ function LoginGate({ onUnlock, onBack }: { onUnlock: (token: string) => void; on
             {isSubmitting ? "Signing in..." : "Sign in"}
           </button>
         </form>
+          <button type="button" className="nomi-admin-back" onClick={onForgotPassword}>Forgot password?</button>
         <button type="button" className="nomi-admin-back" onClick={onBack}>
           Back to menu
         </button>
@@ -123,6 +124,10 @@ function LoginGate({ onUnlock, onBack }: { onUnlock: (token: string) => void; on
 
 function PinGate({ token, onUnlock, onBack }: { token: string; onUnlock: () => void; onBack: () => void }) {
   const [pin, setPin] = useState("");
+  const [isRecovering, setIsRecovering] = useState(false);
+  const [accountPassword, setAccountPassword] = useState("");
+  const [newPin, setNewPin] = useState("");
+  const [confirmPin, setConfirmPin] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -155,27 +160,65 @@ function PinGate({ token, onUnlock, onBack }: { token: string; onUnlock: () => v
     }
   };
 
+  const recover = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setIsSubmitting(true);
+    setError("");
+    try {
+      const response = await fetch(`${API_URL}/api/auth/pin/recover`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ password: accountPassword, newPin, confirmPin }),
+      });
+      const data = (await response.json().catch(() => null)) as { message?: string } | null;
+      if (!response.ok) throw new Error(data?.message ?? "Unable to reset dashboard PIN.");
+      onUnlock();
+    } catch (recoveryError) {
+      setError(recoveryError instanceof Error ? recoveryError.message : "Unable to reset dashboard PIN.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   return (
     <>
       <DecorativeBackground />
       <main className="nomi-admin-shell">
         <section className="nomi-admin-gate nomi-pin-gate" aria-labelledby="pin-gate-title">
           <span className="nomi-admin-kicker">Nomi / Private</span>
-          <h1 id="pin-gate-title">Unlock dashboard</h1>
-          <p>Enter your dashboard PIN to continue.</p>
-          <div className="nomi-pin-display" aria-label={`${pin.length} of 4 digits entered`}>
-            {Array.from({ length: 4 }, (_, index) => <span key={index} className={index < pin.length ? "is-filled" : ""} />)}
-          </div>
-          <div className="nomi-pin-keypad" aria-label="PIN keypad">
-            {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((key) => (
-              <button type="button" key={key} onClick={() => pressKey(key)} disabled={isSubmitting}>{key}</button>
-            ))}
-            <button type="button" onClick={() => setPin("")} disabled={isSubmitting}>Clear</button>
-            <button type="button" onClick={() => pressKey("0")} disabled={isSubmitting}>0</button>
-            <button type="button" onClick={() => setPin((current) => current.slice(0, -1))} disabled={isSubmitting}>Back</button>
-          </div>
+          {!isRecovering ? (
+            <>
+              <h1 id="pin-gate-title">Unlock dashboard</h1>
+              <p>Enter your dashboard PIN to continue.</p>
+              <div className="nomi-pin-display" aria-label={`${pin.length} of 4 digits entered`}>
+                {Array.from({ length: 4 }, (_, index) => <span key={index} className={index < pin.length ? "is-filled" : ""} />)}
+              </div>
+              <div className="nomi-pin-keypad" aria-label="PIN keypad">
+                {["1", "2", "3", "4", "5", "6", "7", "8", "9"].map((key) => (
+                  <button type="button" key={key} onClick={() => pressKey(key)} disabled={isSubmitting}>{key}</button>
+                ))}
+                <button type="button" onClick={() => setPin("")} disabled={isSubmitting}>Clear</button>
+                <button type="button" onClick={() => pressKey("0")} disabled={isSubmitting}>0</button>
+                <button type="button" onClick={() => setPin((current) => current.slice(0, -1))} disabled={isSubmitting}>Back</button>
+              </div>
+              <button type="button" className="nomi-admin-back" onClick={() => { setError(""); setIsRecovering(true); }}>Forgot PIN?</button>
+            </>
+          ) : (
+            <form onSubmit={(event) => void recover(event)}>
+              <h1 id="pin-gate-title">Reset dashboard PIN</h1>
+              <p>Verify your account password, then choose a new 4-digit PIN.</p>
+              <label htmlFor="pin-recovery-password">Account password</label>
+              <input id="pin-recovery-password" type="password" autoComplete="current-password" required value={accountPassword} onChange={(event) => setAccountPassword(event.target.value)} />
+              <label htmlFor="pin-recovery-new">New 4-digit PIN</label>
+              <input id="pin-recovery-new" type="password" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} required value={newPin} onChange={(event) => setNewPin(event.target.value)} />
+              <label htmlFor="pin-recovery-confirm">Confirm PIN</label>
+              <input id="pin-recovery-confirm" type="password" inputMode="numeric" pattern="[0-9]{4}" maxLength={4} required value={confirmPin} onChange={(event) => setConfirmPin(event.target.value)} />
+              <button className="nomi-admin-submit" type="submit" disabled={isSubmitting}>{isSubmitting ? "Resetting PIN..." : "Reset PIN"}</button>
+              <button type="button" className="nomi-admin-back" onClick={() => { setError(""); setIsRecovering(false); }}>Back to PIN</button>
+            </form>
+          )}
           {error && <span className="nomi-admin-error">{error}</span>}
-          {isSubmitting && <p className="nomi-pin-status">Checking PIN...</p>}
+          {isSubmitting && !isRecovering && <p className="nomi-pin-status">Checking PIN...</p>}
           <button type="button" className="nomi-admin-back" onClick={onBack}>Back to menu</button>
         </section>
       </main>
@@ -452,24 +495,26 @@ function Dashboard({ token, onLock, onLogout, onTokenChange }: { token: string; 
       <DecorativeBackground />
       <main className="nomi-admin-shell">
         <section className="nomi-admin-dashboard" aria-labelledby="admin-title">
-        <header className="nomi-admin-header">
+        <header className="nomi-admin-header nomi-owner-admin-header">
           <div>
             <span className="nomi-admin-kicker">Nomi / Private</span>
             <h1 id="admin-title">Menu dashboard</h1>
             <p>Keep your business menu current from one quiet workspace.</p>
           </div>
-          <button type="button" className="nomi-admin-lock" onClick={() => onLock(workspace?.slug)}>
-            Lock dashboard
-          </button>
-          <button type="button" className="nomi-admin-lock" onClick={onLogout}>
+          <button type="button" className="nomi-admin-lock nomi-admin-logout" onClick={onLogout}>
             Log out
           </button>
-          <button type="button" className="nomi-admin-lock" onClick={() => setIsCredentialsEditorOpen((open) => !open)}>
-            Change username &amp; password
-          </button>
-          <button type="button" className="nomi-admin-lock" onClick={() => { setPinError(""); setIsPinEditorOpen((open) => !open); }}>
-            {pinConfigured ? "Change PIN" : "Set up PIN"}
-          </button>
+          <div className="nomi-admin-header-actions">
+            <button type="button" className="nomi-admin-lock" onClick={() => onLock(workspace?.slug)}>
+              Lock dashboard
+            </button>
+            <button type="button" className="nomi-admin-lock" onClick={() => setIsCredentialsEditorOpen((open) => !open)}>
+              Change username &amp; password
+            </button>
+            <button type="button" className="nomi-admin-lock" onClick={() => { setPinError(""); setIsPinEditorOpen((open) => !open); }}>
+              {pinConfigured ? "Change PIN" : "Set up PIN"}
+            </button>
+          </div>
         </header>
 
         {workspace && (
@@ -683,8 +728,8 @@ export default function Admin() {
     navigate("/admin");
   };
 
-  if (!token) return <LoginGate onUnlock={unlockDashboard} onBack={() => navigate("/")} />;
-  if (requiresPin && pinStatus === "checking") return <LoginGate onUnlock={unlockDashboard} onBack={() => navigate("/")} />;
+  if (!token) return <LoginGate onUnlock={unlockDashboard} onBack={() => navigate("/")} onForgotPassword={() => navigate("/password-recovery")} />;
+  if (requiresPin && pinStatus === "checking") return <LoginGate onUnlock={unlockDashboard} onBack={() => navigate("/")} onForgotPassword={() => navigate("/password-recovery")} />;
   if (requiresPin && pinStatus === "configured") return <PinGate token={token} onUnlock={() => setRequiresPin(false)} onBack={() => navigate("/")} />;
   return <Dashboard token={token} onLock={lockDashboard} onLogout={logout} onTokenChange={unlockDashboard} />;
 }

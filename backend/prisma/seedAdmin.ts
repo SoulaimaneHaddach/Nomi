@@ -20,14 +20,7 @@ const platformAdmin = await prisma.user.upsert({
   create: { email, passwordHash, role: "PLATFORM_ADMIN" },
 });
 
-const defaultRestaurant = await prisma.restaurant.findUnique({ where: { slug: "nomi-cafe" } });
-if (defaultRestaurant) {
-  await prisma.membership.upsert({
-    where: { userId_restaurantId: { userId: platformAdmin.id, restaurantId: defaultRestaurant.id } },
-    update: { role: "OWNER" },
-    create: { userId: platformAdmin.id, restaurantId: defaultRestaurant.id, role: "OWNER" },
-  });
-}
+await prisma.membership.deleteMany({ where: { userId: platformAdmin.id } });
 
 console.log(`Platform account ready: ${platformAdmin.email}`);
 await prisma.$disconnect();

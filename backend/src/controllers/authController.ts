@@ -1,7 +1,9 @@
 import bcrypt from "bcryptjs";
+import { createHash, randomBytes } from "node:crypto";
 import type { Prisma } from "@prisma/client";
 import type { Request, Response } from "express";
 import jwt from "jsonwebtoken";
+import { sendPasswordResetEmail } from "../lib/mailer.js";
 import prisma from "../lib/prisma.js";
 
 const jwtSecret = process.env.JWT_SECRET ?? "";
@@ -39,8 +41,8 @@ async function authenticateUser(email: string, password: string) {
   return user && validPassword ? user : null;
 }
 
-function issueAuthToken(user: { id: string; role: "PLATFORM_ADMIN" | "RESTAURANT_OWNER" }) {
-  return jwt.sign({ role: user.role }, jwtSecret, { subject: user.id, expiresIn: "8h" });
+function issueAuthToken(user: { id: string; role: "PLATFORM_ADMIN" | "RESTAURANT_OWNER"; authVersion: number }) {
+  return jwt.sign({ role: user.role, authVersion: user.authVersion }, jwtSecret, { subject: user.id, expiresIn: "8h" });
 }
 
 export async function registerOwner(request: Request, response: Response) {
@@ -187,6 +189,7 @@ export async function loginAdmin(request: Request, response: Response) {
     token,
     user: {
       id: user.id,
+      name: user.name,
       email: user.email,
       role: user.role,
       restaurants: user.memberships.map(({ restaurant, role }) => ({ ...restaurant, role })),
@@ -213,6 +216,108 @@ export async function loginOwner(request: Request, response: Response) {
       restaurants: user.memberships.map(({ restaurant, role }) => ({ ...restaurant, role })),
     },
   });
+}
+
+export async function requestPasswordReset(request: Request, response: Response) {
+  const { email } = request.body as { email?: string };
+  const normalizedEmail = email?.trim().toLowerCase();
+
+  if (normalizedEmail?.includes("@")) {
+    const user = await prisma.user.findUnique({ where: { email: normalizedEmail }, select: { id: true, email: true } });
+    if (user) {
+      const token = randomBytes(32).toString("hex");
+      const tokenHash = createHash("sha256").update(token).digest("hex");
+      await prisma.passwordResetToken.deleteMany({ where: { userId: user.id } });
+      await prisma.passwordResetToken.create({
+        data: { userId: user.id, tokenHash, expiresAt: new Date(Date.now() + 30 * 60 * 1000) },
+      });
+
+      const origin = process.env.FRONTEND_ORIGIN ?? "http://localhost:5173";
+      const resetUrl = `${origin}/password-recovery?token=${encodeURIComponent(token)}`;
+      try {
+        await sendPasswordResetEmail(user.email, resetUrl);
+      } catch (error) {
+        await prisma.passwordResetToken.deleteMany({ where: { tokenHash } });
+        console.error("Unable to send password reset email", error);
+      }
+    }
+  }
+
+  response.json({ message: "If an account exists for that email, password reset instructions will be sent." });
+}
+
+export async function resetPassword(request: Request, response: Response) {
+  const { token, password, confirmPassword } = request.body as {
+    token?: string;
+    password?: string;
+    confirmPassword?: string;
+  };
+
+  if (!token || !password || password.length < 12 || password !== confirmPassword) {
+    response.status(400).json({ message: "Enter a matching password with at least 12 characters." });
+    return;
+  }
+
+  const tokenHash = createHash("sha256").update(token).digest("hex");
+  const now = new Date();
+  const resetToken = await prisma.passwordResetToken.findFirst({
+    where: { tokenHash, expiresAt: { gt: now } },
+    select: { id: true, userId: true },
+  });
+
+  if (!resetToken) {
+    response.status(400).json({ message: "This reset link is invalid or expired. Request a new one." });
+    return;
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  const wasReset = await prisma.$transaction(async (transaction) => {
+    const consumed = await transaction.passwordResetToken.deleteMany({
+      where: { id: resetToken.id, expiresAt: { gt: new Date() } },
+    });
+    if (consumed.count !== 1) return false;
+
+    await transaction.user.update({
+      where: { id: resetToken.userId },
+      data: { passwordHash, authVersion: { increment: 1 } },
+    });
+    await transaction.passwordResetToken.deleteMany({ where: { userId: resetToken.userId } });
+    return true;
+  });
+
+  if (!wasReset) {
+    response.status(400).json({ message: "This reset link is invalid or expired. Request a new one." });
+    return;
+  }
+
+  response.json({ message: "Password reset. You can now sign in with your new password." });
+}
+
+export async function recoverPin(request: Request, response: Response) {
+  const { password, newPin, confirmPin } = request.body as {
+    password?: string;
+    newPin?: string;
+    confirmPin?: string;
+  };
+  const userId = request.user?.id;
+
+  if (!userId || request.user?.role !== "RESTAURANT_OWNER") {
+    response.status(403).json({ message: "Restaurant owner access is required." });
+    return;
+  }
+  if (!password || !validatePin(newPin) || newPin !== confirmPin) {
+    response.status(400).json({ message: "Enter your account password and matching 4-digit PINs." });
+    return;
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId }, select: { passwordHash: true } });
+  if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
+    response.status(401).json({ message: "Account password is incorrect." });
+    return;
+  }
+
+  await prisma.user.update({ where: { id: userId }, data: { pinHash: await bcrypt.hash(newPin as string, 12) } });
+  response.json({ configured: true });
 }
 
 export async function changeAdminCredentials(request: Request, response: Response) {
@@ -244,13 +349,11 @@ export async function changeAdminCredentials(request: Request, response: Respons
       data: {
         email: newEmail.trim().toLowerCase(),
         passwordHash: await bcrypt.hash(newPassword, 12),
+        authVersion: { increment: 1 },
       },
     });
 
-    const token = jwt.sign({ role: updatedUser.role }, jwtSecret, {
-      subject: updatedUser.id,
-      expiresIn: "8h",
-    });
+    const token = issueAuthToken(updatedUser);
 
     response.json({ token, user: { id: updatedUser.id, email: updatedUser.email, role: updatedUser.role } });
   } catch (error) {
@@ -281,6 +384,7 @@ export async function getCurrentUser(request: Request, response: Response) {
 
   response.json({
     id: user.id,
+    name: user.name,
     email: user.email,
     role: user.role,
     restaurants: user.memberships.map(({ restaurant, role }) => ({ ...restaurant, role })),

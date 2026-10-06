@@ -24,6 +24,8 @@ export default function Platform() {
   const [token, setToken] = useState(() =>
     sessionStorage.getItem(PLATFORM_SESSION_KEY),
   );
+  const [accountName, setAccountName] = useState("");
+  const [accountEmail, setAccountEmail] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [restaurants, setRestaurants] = useState<PlatformRestaurant[]>([]);
@@ -42,16 +44,33 @@ export default function Platform() {
     });
     const data = (await response.json().catch(() => null)) as {
       token?: string;
-      user?: { role?: string };
+      user?: { role?: string; name?: string | null; email?: string };
       message?: string;
     } | null;
     if (!response.ok || !data?.token || data.user?.role !== "PLATFORM_ADMIN") {
       setError("Platform administrator credentials are required.");
       return;
     }
+    setAccountName(data.user.name?.trim() ?? "");
+    setAccountEmail(data.user.email ?? email);
     sessionStorage.setItem(PLATFORM_SESSION_KEY, data.token);
     setToken(data.token);
   };
+
+  useEffect(() => {
+    if (!token) return;
+    fetch(`${API_URL}/api/auth/me`, { headers: { Authorization: `Bearer ${token}` } })
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Unable to load platform account details.");
+        return response.json() as Promise<{ name: string | null; email: string; role: string }>;
+      })
+      .then((account) => {
+        if (account.role !== "PLATFORM_ADMIN") throw new Error("Platform administrator access required.");
+        setAccountName(account.name?.trim() ?? "");
+        setAccountEmail(account.email);
+      })
+      .catch((loadError: unknown) => setError(loadError instanceof Error ? loadError.message : "Unable to load platform account details."));
+  }, [token]);
 
   useEffect(() => {
     if (!token) return;
@@ -113,6 +132,9 @@ export default function Platform() {
                 Sign in
               </button>
             </form>
+            <button type="button" className="nomi-admin-back" onClick={() => navigate("/password-recovery")}>
+              Forgot password?
+            </button>
             <button
               type="button"
               className="nomi-admin-back"
@@ -130,7 +152,7 @@ export default function Platform() {
       <DecorativeBackground />
       <main className="nomi-admin-shell">
         <section className="nomi-admin-dashboard">
-          <header className="nomi-admin-header">
+          <header className="nomi-admin-header nomi-platform-header">
             <div>
               <span className="nomi-admin-kicker">Nomi Platform</span>
               <h1>Platform Admin dashboard</h1>
@@ -138,15 +160,23 @@ export default function Platform() {
                 Business owners create their own accounts from the Nomi homepage.
               </p>
             </div>
-            <button
-              type="button"
-              className="nomi-admin-lock"
-              onClick={() => {
-                sessionStorage.removeItem(PLATFORM_SESSION_KEY);
-                setToken(null);
-              }}>
-              Lock platform
-            </button>
+            <div className="nomi-platform-account-actions">
+              <div className="nomi-platform-account">
+                <strong>{accountName || accountEmail || "Platform administrator"}</strong>
+                {accountName && accountEmail && <span>{accountEmail}</span>}
+              </div>
+              <button
+                type="button"
+                className="nomi-admin-lock nomi-admin-logout"
+                onClick={() => {
+                  sessionStorage.removeItem(PLATFORM_SESSION_KEY);
+                  setAccountName("");
+                  setAccountEmail("");
+                  setToken(null);
+                }}>
+                Lock platform
+              </button>
+            </div>
           </header>
           <div className="nomi-admin-metrics">
             <article><span>Total businesses</span><strong>{restaurants.length}</strong></article>

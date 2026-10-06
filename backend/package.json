@@ -10,7 +10,6 @@
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
     "prisma:migrate": "prisma migrate dev",
-    "prisma:seed": "tsx prisma/seed.ts",
     "prisma:seed-admin": "tsx prisma/seedAdmin.ts"
   },
   "dependencies": {
@@ -21,7 +20,8 @@
     "express": "^5.1.0",
     "express-rate-limit": "^8.7.0",
     "jsonwebtoken": "^9.0.2",
-    "multer": "^2.3.0"
+    "multer": "^2.3.0",
+    "nodemailer": "^10.0.15"
   },
   "devDependencies": {
     "@types/cors": "^2.8.19",
@@ -29,6 +29,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.2.0",
     "@types/node": "^24.13.3",
+    "@types/nodemailer": "^8.0.2",
     "prisma": "^6.16.2",
     "tsx": "^4.20.5",
     "typescript": "^5.9.2"

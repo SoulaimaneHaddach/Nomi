@@ -6,7 +6,7 @@ export async function listLanguages(_request: Request, response: Response) {
 }
 
 export async function listMenuLanguages(_request: Request, response: Response) {
-  const slug = typeof _request.params.slug === "string" ? _request.params.slug : "nomi-cafe";
+  const slug = typeof _request.params.slug === "string" ? _request.params.slug : "";
   const restaurant = await prisma.restaurant.findUnique({ where: { slug } });
   if (!restaurant || restaurant.status === "SUSPENDED") {
     response.status(404).json({ message: "Restaurant not found" });

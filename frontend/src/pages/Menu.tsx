@@ -73,7 +73,7 @@ export function EmptyNomiState() {
       title="Digital menus for cafés & businesses."
       actions={(
         <div className="mt-8 flex flex-wrap justify-center gap-3">
-          <button type="button" className="nomi-public-action" onClick={() => navigate("/login")}>Owner Login</button>
+          <button type="button" className="nomi-public-action" onClick={() => navigate("/login")}>Business Owner</button>
           <button type="button" className="nomi-public-action is-secondary" onClick={() => navigate("/register")}>Create Business Account</button>
         </div>
       )}

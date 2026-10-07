@@ -1,15 +1,20 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Menu, { EmptyNomiState } from "./pages/Menu";
+import Menu from "./pages/Menu";
 import Admin from "./pages/Admin";
 import Register from "./pages/Register";
 import Platform from "./pages/Platform";
 import PasswordRecovery from "./pages/PasswordRecovery";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import Contact from "./pages/Contact";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<EmptyNomiState />} />
+        <Route path="/" element={<Home />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Admin />} />
         <Route path="/admin" element={<Admin />} />
         <Route path="/register" element={<Register />} />

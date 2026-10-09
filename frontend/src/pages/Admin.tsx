@@ -506,7 +506,7 @@ function Dashboard({ token, onLock, onLogout, onTokenChange }: { token: string; 
           </button>
           <div className="nomi-admin-header-actions">
             <button type="button" className="nomi-admin-lock" onClick={() => onLock(workspace?.slug)}>
-              Lock dashboard
+              Show Menu
             </button>
             <button type="button" className="nomi-admin-lock" onClick={() => setIsCredentialsEditorOpen((open) => !open)}>
               Change username &amp; password
@@ -711,7 +711,12 @@ export default function Admin() {
   }, [token, requiresPin]);
 
   const lockDashboard = (slug?: string) => {
-    navigate(slug ? `/${slug}` : "/");
+    sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    setToken(null);
+    setRequiresPin(false);
+
+    const nextSlug = typeof slug === "string" && slug.trim() ? slug.trim() : "";
+    navigate(nextSlug ? `/${nextSlug}` : "/");
   };
 
   const logout = () => {
@@ -723,7 +728,7 @@ export default function Admin() {
 
   const unlockDashboard = (token: string) => {
     sessionStorage.setItem(ADMIN_SESSION_KEY, token);
-    setRequiresPin(false);
+    setRequiresPin(true);
     setToken(token);
     navigate("/admin");
   };

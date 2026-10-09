@@ -85,7 +85,7 @@ function LoginGate({ onUnlock, onBack, onForgotPassword }: { onUnlock: (token: s
         <section className="nomi-admin-gate" aria-labelledby="admin-gate-title">
         <span className="nomi-admin-kicker">Nomi / Private</span>
         <h1 id="admin-gate-title">Private menu access</h1>
-        <p>Sign in to manage your business menu.</p>
+        <p className="nomi-demo-note">Demo access: use any email and password. PIN is 1234.</p>
         <form onSubmit={(event) => { event.preventDefault(); void handleLogin(); }}>
           <label htmlFor="admin-email">Email</label>
           <input

@@ -140,6 +140,10 @@ button {
   font-size: 0.9rem;
 }
 
+.nomi-admin-gate .nomi-demo-note {
+  color: #c0392b;
+}
+
 .nomi-admin-gate form {
   display: grid;
   gap: 0.55rem;
